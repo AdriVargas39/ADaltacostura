@@ -61,7 +61,7 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
 .product-actions { display:flex; gap:6px; margin-top:10px; }
 .btn-sm { flex:1; padding:7px 8px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--surface); font-size:12px; font-weight:500; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:4px; color:var(--text-secondary); transition:all var(--transition); }
 .btn-sm:hover { background:var(--surface-muted); }
-.out-of-stock-overlay { position:absolute; inset:0; background:rgba(255,255,255,0.8); display:flex; align-items:center; justify-content:center; font-weight:700; color:var(--danger); font-size:14px; text-align:center; padding:10px; z-index:2; }
+.out-of-stock-overlay { position:absolute; inset:0; background:rgba(255,255,255,0.85); display:flex; align-items:center; justify-content:center; font-weight:700; color:var(--danger); font-size:14px; text-align:center; padding:10px; z-index:2; }
 .stock-warning-badge { background:#fef3c7; color:#d97706; font-size:10px; padding:2px 6px; border-radius:var(--radius-full); font-weight:600; display:inline-block; margin-bottom:4px; }
 
 /* ===== CART ===== */
@@ -84,7 +84,6 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
 .admin-toggle { display:flex; align-items:center; gap:10px; padding:10px 14px; background:var(--surface-muted); border-radius:var(--radius-md); margin-bottom:14px; font-size:13px; cursor:pointer; border:1px solid var(--border); font-weight:500; }
 .order-card { padding:14px; border:1px solid var(--border); border-radius:var(--radius-md); margin-bottom:10px; background:var(--surface); box-shadow:var(--shadow-sm); }
 .order-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
-.order-id { font-size:13px; font-weight:700; }
 .order-status { padding:3px 10px; border-radius:var(--radius-full); font-size:11px; font-weight:600; }
 .status-Pendiente { background:#fef3c7; color:#d97706; }
 .status-Enviado { background:#dbeafe; color:#2563eb; }
@@ -218,13 +217,14 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
     </div>
   </div>
 
-  <!-- Add Product Modal -->
+  <!-- Add/Edit Product Modal -->
   <div id="addProductModal" class="modal-overlay" onclick="closeModals(event)">
     <div class="modal" onclick="event.stopPropagation()">
       <div class="modal-header">
-        <span class="modal-title">Subir Prenda</span>
+        <span class="modal-title" id="modalProductTitle">Subir Prenda</span>
         <button class="modal-close" onclick="closeModals()">✕</button>
       </div>
+      <input type="hidden" id="editProdId">
       <input type="text" id="newProdName" class="form-input" placeholder="Nombre de la prenda">
       <input type="number" id="newProdPrice" class="form-input" placeholder="Precio ($)">
       <input type="text" id="newProdCat" class="form-input" placeholder="Categoría (ej: Vestidos, Zapatos)">
@@ -232,7 +232,7 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
       <input type="text" id="newProdColors" class="form-input" placeholder="Color(es) (ej: Rojo, Negro, Azul)">
       <div style="display:flex; gap:10px;">
         <div style="flex:1;">
-          <label style="font-size:12px; margin-bottom:3px; display:block;">Stock inicial:</label>
+          <label style="font-size:12px; margin-bottom:3px; display:block;">Stock actual:</label>
           <input type="number" id="newProdStock" class="form-input" placeholder="Cantidad" value="10">
         </div>
         <div style="flex:1;">
@@ -278,7 +278,7 @@ const storage = firebase.storage();
 const auth = firebase.auth();
 
 // Variables Globales
-const whatsappNumber = "51999999999"; // Cambia por tu número
+const whatsappNumber = "51999999999"; 
 let clientId = localStorage.getItem('ad_client_id') || 'cliente_' + Date.now();
 localStorage.setItem('ad_client_id', clientId);
 let cart = JSON.parse(localStorage.getItem('tienda_cart') || '[]');
@@ -311,7 +311,10 @@ auth.onAuthStateChanged(user => {
 });
 
 function openLoginModal() { document.getElementById('loginModal').classList.add('active'); }
-function openLogoModal() { document.getElementById('logoModal').classList.add('active'); }
+function openLogoModal() { 
+  document.getElementById('newLogoImg').value = '';
+  document.getElementById('logoModal').classList.add('active'); 
+}
 function closeModals(e) { 
   if(!e || e.target.classList.contains('modal-overlay') || e.target.classList.contains('modal-close')) {
     document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active')); 
@@ -353,8 +356,8 @@ function saveLogo() {
     closeModals();
     document.getElementById('newLogoImg').value = '';
     loadLogo();
-    showToast('¡Logo actualizado!');
-  }).catch(err => alert("Error: " + err.message));
+    showToast('¡Logo actualizado con éxito!');
+  }).catch(err => alert("Error al subir logo: " + err.message));
 }
 
 // 3. PRODUCTOS
@@ -405,7 +408,8 @@ function renderProducts() {
 
     const adminControls = isAdmin ? `
       <div style="display:flex; gap:5px; margin-top:5px;">
-        <button class="btn-sm" style="background:#dc2626; color:#fff;" onclick="deleteProduct('${p.id}')">Eliminar</button>
+        <button class="btn-sm" style="background:var(--surface-muted);" onclick="openEditModal('${p.id}')">✏️ Editar</button>
+        <button class="btn-sm" style="background:#dc2626; color:#fff;" onclick="deleteProduct('${p.id}')">🗑️ Borrar</button>
       </div>
     ` : '';
     
@@ -416,6 +420,7 @@ function renderProducts() {
       <div class="product-info">
         <div class="product-name">${p.name}</div>
         <div class="product-details-text">Talla: ${p.size || 'Única'} | Color: ${p.colors || 'Varios'}</div>
+        <div class="product-details-text">Stock: ${stock}</div>
         ${warningBadge}
         <div class="product-price">$${p.price}</div>
         <div class="product-actions">
@@ -434,9 +439,38 @@ function setCategory(cat) {
 }
 function filterProducts() { currentSearch = document.getElementById('searchInput').value; renderProducts(); }
 
-function openAddModal() { document.getElementById('addProductModal').classList.add('active'); }
+function openAddModal() {
+  document.getElementById('modalProductTitle').textContent = 'Subir Prenda';
+  document.getElementById('editProdId').value = '';
+  document.getElementById('newProdName').value = '';
+  document.getElementById('newProdPrice').value = '';
+  document.getElementById('newProdCat').value = '';
+  document.getElementById('newProdSize').value = '';
+  document.getElementById('newProdColors').value = '';
+  document.getElementById('newProdStock').value = '10';
+  document.getElementById('newProdMinStock').value = '3';
+  document.getElementById('newProdImg').value = '';
+  document.getElementById('addProductModal').classList.add('active');
+}
+
+function openEditModal(id) {
+  const p = allProducts.find(x => x.id === id);
+  if(!p) return;
+  document.getElementById('modalProductTitle').textContent = 'Editar Prenda';
+  document.getElementById('editProdId').value = p.id;
+  document.getElementById('newProdName').value = p.name || '';
+  document.getElementById('newProdPrice').value = p.price || '';
+  document.getElementById('newProdCat').value = p.category || '';
+  document.getElementById('newProdSize').value = p.size || '';
+  document.getElementById('newProdColors').value = p.colors || '';
+  document.getElementById('newProdStock').value = p.stock ?? 10;
+  document.getElementById('newProdMinStock').value = p.minStock ?? 3;
+  document.getElementById('newProdImg').value = '';
+  document.getElementById('addProductModal').classList.add('active');
+}
 
 function saveProduct() {
+  const editId = document.getElementById('editProdId').value;
   const name = document.getElementById('newProdName').value;
   const price = document.getElementById('newProdPrice').value;
   const cat = document.getElementById('newProdCat').value.trim();
@@ -446,39 +480,52 @@ function saveProduct() {
   const minStock = document.getElementById('newProdMinStock').value;
   const file = document.getElementById('newProdImg').files[0];
 
-  if(!name || !price || !cat || !file) return alert("Completa al menos el nombre, precio, categoría y foto");
+  if(!name || !price || !cat) return alert("Completa al menos el nombre, precio y categoría");
+  if(!editId && !file) return alert("Selecciona una foto para el nuevo producto");
 
-  showToast('Subiendo foto...');
-  const ref = storage.ref(`products/${Date.now()}_${file.name}`);
-  ref.put(file).then(snap => snap.ref.getDownloadURL()).then(url => {
-    return db.collection('products').add({
+  showToast(editId ? 'Actualizando producto...' : 'Subiendo foto y producto...');
+
+  const saveData = (imageUrl) => {
+    const dataObj = {
       name, 
       price: Number(price), 
       category: cat, 
       size: size || 'Única', 
       colors: colors || 'Único', 
       stock: Number(stock || 10), 
-      minStock: Number(minStock || 2), 
-      image: url, 
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-  }).then(() => {
-    closeModals();
-    document.getElementById('newProdName').value = '';
-    document.getElementById('newProdPrice').value = '';
-    document.getElementById('newProdCat').value = '';
-    document.getElementById('newProdSize').value = '';
-    document.getElementById('newProdColors').value = '';
-    document.getElementById('newProdStock').value = '10';
-    document.getElementById('newProdMinStock').value = '3';
-    document.getElementById('newProdImg').value = '';
-    showToast('¡Producto agregado!');
-  }).catch(err => alert("Error: " + err.message));
+      minStock: Number(minStock || 3)
+    };
+    if(imageUrl) dataObj.image = imageUrl;
+
+    let promise;
+    if(editId) {
+      promise = db.collection('products').doc(editId).update(dataObj);
+    } else {
+      dataObj.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      promise = db.collection('products').add(dataObj);
+    }
+
+    promise.then(() => {
+      closeModals();
+      showToast(editId ? '¡Producto actualizado con éxito!' : '¡Producto agregado con éxito! Ya puedes subir otro.');
+    }).catch(err => alert("Error: " + err.message));
+  };
+
+  if(file) {
+    const ref = storage.ref(`products/${Date.now()}_${file.name}`);
+    ref.put(file).then(snap => snap.ref.getDownloadURL()).then(url => {
+      saveData(url);
+    }).catch(err => alert("Error al subir imagen: " + err.message));
+  } else {
+    saveData(null);
+  }
 }
 
 function deleteProduct(id) {
   if(confirm("¿Seguro que deseas eliminar esta prenda?")) {
-    db.collection('products').doc(id).delete();
+    db.collection('products').doc(id).delete().then(() => {
+      showToast('Producto eliminado');
+    });
   }
 }
 
@@ -547,7 +594,6 @@ function sendWhatsAppOrder() {
   });
   text += `\nTotal: $${total}\nMi celular es: ${phone}`;
 
-  // Descontar stock en Firestore de manera automática
   const batch = db.batch();
   cart.forEach(item => {
     const prodRef = db.collection('products').doc(item.id);
