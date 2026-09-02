@@ -30,6 +30,7 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
 .tab-btn { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 2px; border:none; background:transparent; border-radius:var(--radius-md); cursor:pointer; color:var(--text-tertiary); font-size:11px; font-weight:500; transition:all var(--transition); position:relative; }
 .tab-btn.active { color:var(--text-primary); background:var(--surface-muted); }
 .tab-btn svg { width:22px; height:22px; stroke-width:1.8; }
+.tab-logo-img { width:22px; height:22px; border-radius:50%; object-fit:cover; display:block; }
 .badge { position:absolute; top:2px; right:6px; min-width:16px; height:16px; background:var(--text-primary); color:var(--surface); border-radius:var(--radius-full); font-size:10px; display:flex; align-items:center; justify-content:center; font-weight:600; padding:0 4px; }
 
 /* ===== VIEWS ===== */
@@ -117,7 +118,8 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
   <!-- TAB BAR -->
   <div class="tab-bar">
     <button class="tab-btn active" data-view="catalogo" onclick="switchView('catalogo')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <img id="navLogoImg" class="tab-logo-img" src="https://via.placeholder.com/150" alt="Logo" style="display:none;">
+      <svg id="navCatalogSvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       <span>Catálogo</span>
     </button>
     <button class="tab-btn" data-view="carrito" onclick="switchView('carrito')">
@@ -144,9 +146,14 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
       <div class="filters" id="categoryFilters">
         <button class="filter-chip active" data-filter="all" onclick="setCategory('all')">Todo</button>
       </div>
-      <button id="adminAddBtn" class="whatsapp-btn" style="display:none; background:var(--text-primary); margin-bottom:15px;" onclick="openAddModal()">
-        ➕ Subir Prenda Nueva
-      </button>
+      <div id="adminControlsArea" style="display:none; margin-bottom:15px;">
+        <button class="whatsapp-btn" style="background:var(--text-primary); margin-top:0; margin-bottom:8px;" onclick="openAddModal()">
+          ➕ Subir Prenda Nueva
+        </button>
+        <button class="btn-full" style="background:var(--accent); font-size:13px; padding:10px;" onclick="openLogoModal()">
+          🖼️ Cambiar Logo de la Tienda
+        </button>
+      </div>
       <div id="productGrid" class="product-grid">Cargando catálogo...</div>
     </div>
 
@@ -224,6 +231,19 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
     </div>
   </div>
 
+  <!-- Logo Modal -->
+  <div id="logoModal" class="modal-overlay" onclick="closeModals(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <span class="modal-title">Cambiar Logo de la Tienda</span>
+        <button class="modal-close" onclick="closeModals()">✕</button>
+      </div>
+      <label style="font-size:12px; margin-bottom:5px; display:block;">Selecciona la imagen para el logo:</label>
+      <input type="file" id="newLogoImg" class="form-input" accept="image/*">
+      <button class="btn-full" onclick="saveLogo()">Guardar Logo</button>
+    </div>
+  </div>
+
   <div id="toast" class="toast"></div>
 </div>
 
@@ -257,7 +277,7 @@ let activeAdminChatUser = null;
 auth.onAuthStateChanged(user => {
   isAdmin = !!user;
   document.getElementById('adminLabel').textContent = isAdmin ? 'Modo vendedora (Activo)' : 'Modo cliente';
-  document.getElementById('adminAddBtn').style.display = isAdmin ? 'block' : 'none';
+  document.getElementById('adminControlsArea').style.display = isAdmin ? 'block' : 'none';
   document.getElementById('logoutBtn').style.display = isAdmin ? 'block' : 'none';
   
   if(isAdmin) {
@@ -270,11 +290,13 @@ auth.onAuthStateChanged(user => {
     loadClientChat();
   }
   
+  loadLogo();
   loadProducts();
   loadOrders();
 });
 
 function openLoginModal() { document.getElementById('loginModal').classList.add('active'); }
+function openLogoModal() { document.getElementById('logoModal').classList.add('active'); }
 function closeModals(e) { 
   if(!e || e.target.classList.contains('modal-overlay') || e.target.classList.contains('modal-close')) {
     document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active')); 
@@ -290,7 +312,37 @@ function loginAdmin() {
 }
 function logoutAdmin() { auth.signOut(); closeModals(); showToast('Sesión cerrada'); }
 
-// 2. PRODUCTOS
+// 2. LOGO
+function loadLogo() {
+  db.collection('config').doc('store').get().then(doc => {
+    if(doc.exists && doc.data().logoUrl) {
+      const url = doc.data().logoUrl;
+      const logoImg = document.getElementById('navLogoImg');
+      const catalogSvg = document.getElementById('navCatalogSvg');
+      logoImg.src = url;
+      logoImg.style.display = 'block';
+      catalogSvg.style.display = 'none';
+    }
+  }).catch(() => {});
+}
+
+function saveLogo() {
+  const file = document.getElementById('newLogoImg').files[0];
+  if(!file) return alert("Selecciona una imagen para el logo");
+
+  showToast('Subiendo logo...');
+  const ref = storage.ref(`logo/store_logo_${Date.now()}`);
+  ref.put(file).then(snap => snap.ref.getDownloadURL()).then(url => {
+    return db.collection('config').doc('store').set({ logoUrl: url }, { merge: true });
+  }).then(() => {
+    closeModals();
+    document.getElementById('newLogoImg').value = '';
+    loadLogo();
+    showToast('¡Logo actualizado!');
+  }).catch(err => alert("Error: " + err.message));
+}
+
+// 3. PRODUCTOS
 function loadProducts() {
   db.collection('products').orderBy('createdAt', 'desc').onSnapshot(snap => {
     allProducts = [];
@@ -370,7 +422,6 @@ function saveProduct() {
     });
   }).then(() => {
     closeModals();
-    // Limpiar campos
     document.getElementById('newProdName').value = '';
     document.getElementById('newProdPrice').value = '';
     document.getElementById('newProdCat').value = '';
@@ -385,7 +436,7 @@ function deleteProduct(id) {
   }
 }
 
-// 3. CARRITO Y PEDIDOS
+// 4. CARRITO Y PEDIDOS
 function addToCart(id) {
   const p = allProducts.find(x => x.id === id);
   const existing = cart.find(item => item.id === id);
@@ -479,7 +530,7 @@ function loadOrders() {
 
 function changeStatus(id, status) { db.collection('orders').doc(id).update({status}); }
 
-// 4. CHAT
+// 5. CHAT
 function loadClientChat() {
   db.collection('chats').doc(clientId).collection('messages').orderBy('timestamp', 'asc').onSnapshot(snap => {
     const box = document.getElementById('chatMessages');
@@ -544,6 +595,7 @@ function sendChat() {
 
 // Utils
 function switchView(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.v("active"));
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById(view).classList.add('active');
