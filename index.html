@@ -217,11 +217,7 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
       </div>
       <input type="text" id="newProdName" class="form-input" placeholder="Nombre de la prenda">
       <input type="number" id="newProdPrice" class="form-input" placeholder="Precio ($)">
-      <select id="newProdCat" class="form-input">
-        <option value="vestidos">Vestidos</option>
-        <option value="blusas">Blusas</option>
-        <option value="pantalones">Pantalones</option>
-      </select>
+     <input type="text" id="newProdCat" class="form-input" placeholder="Categoría (ej: Vestidos, Zapatos, Accesorios)">
       <label style="font-size:12px; margin-bottom:5px; display:block;">Sube una foto:</label>
       <input type="file" id="newProdImg" class="form-input" accept="image/*" capture="environment">
       <button class="btn-full" onclick="saveProduct()">Guardar Producto</button>
