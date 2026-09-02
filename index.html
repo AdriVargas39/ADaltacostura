@@ -240,8 +240,8 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
           <input type="number" id="newProdMinStock" class="form-input" placeholder="Mínimo" value="3">
         </div>
       </div>
-      <label style="font-size:12px; margin-bottom:5px; display:block;">Selecciona una foto:</label>
-      <input type="file" id="newProdImg" class="form-input" accept="image/*" capture="false">
+      <label style="font-size:12px; margin-bottom:5px; display:block;">Selecciona una foto (Galería o Archivos):</label>
+      <input type="file" id="newProdImg" class="form-input">
       <button class="btn-full" onclick="saveProduct()">Guardar Producto</button>
     </div>
   </div>
@@ -254,7 +254,7 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
         <button class="modal-close" onclick="closeModals()">✕</button>
       </div>
       <label style="font-size:12px; margin-bottom:5px; display:block;">Selecciona la imagen para el logo:</label>
-      <input type="file" id="newLogoImg" class="form-input" accept="image/*" capture="false">
+      <input type="file" id="newLogoImg" class="form-input">
       <button class="btn-full" onclick="saveLogo()">Guardar Logo</button>
     </div>
   </div>
