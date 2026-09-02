@@ -241,7 +241,7 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
         </div>
       </div>
       <label style="font-size:12px; margin-bottom:5px; display:block;">Selecciona una foto:</label>
-      <input type="file" id="newProdImg" class="form-input" accept="image/*">
+      <input type="file" id="newProdImg" class="form-input" accept="image/*" capture="false">
       <button class="btn-full" onclick="saveProduct()">Guardar Producto</button>
     </div>
   </div>
@@ -254,7 +254,7 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
         <button class="modal-close" onclick="closeModals()">✕</button>
       </div>
       <label style="font-size:12px; margin-bottom:5px; display:block;">Selecciona la imagen para el logo:</label>
-      <input type="file" id="newLogoImg" class="form-input" accept="image/*">
+      <input type="file" id="newLogoImg" class="form-input" accept="image/*" capture="false">
       <button class="btn-full" onclick="saveLogo()">Guardar Logo</button>
     </div>
   </div>
@@ -728,5 +728,4 @@ renderCart();
 updateCartBadge();
 </script>
 </body>
-</html>
 </html>
