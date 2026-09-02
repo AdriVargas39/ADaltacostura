@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Administración - AD Alta Costura</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+</head>
+<body>
+
+  <header class="navbar bg-dark">
+    <h1>Admin Panel - AD Alta Costura</h1>
+    <button id="logout-btn" class="btn btn-danger" onclick="logout()" style="display:none;">Cerrar Sesión</button>
+  </header>
+
+  <main class="container">
+    <section id="login-section" class="card-form">
+      <h2>Iniciar Sesión Admin</h2>
+      <input type="email" id="admin-email" placeholder="Correo electrónico">
+      <input type="password" id="admin-pass" placeholder="Contraseña">
+      <button class="btn btn-primary" onclick="login()">Ingresar</button>
+    </section>
+
+    <section id="admin-section" style="display:none;">
+      <nav class="admin-tabs">
+        <button onclick="showTab('tab-products')">👗 Productos</button>
+        <button onclick="showTab('tab-orders')">📋 Pedidos</button>
+        <button onclick="showTab('tab-chat')">💬 Chats</button>
+      </nav>
+
+      <div id="tab-products" class="tab-content active">
+        <h3>Agregar Nueva Prenda</h3>
+        <div class="card-form">
+          <input type="text" id="p-name" placeholder="Nombre de la prenda">
+          <input type="number" id="p-price" placeholder="Precio ($)">
+          <label>Foto de la prenda (puedes tomarla con la cámara del celular):</label>
+          <input type="file" id="p-file" accept="image/*" capture="environment">
+          <button class="btn btn-success" onclick="addProduct()">➕ Guardar Producto</button>
+        </div>
+
+        <h3>Inventario de Productos</h3>
+        <div id="admin-product-list" class="grid"></div>
+      </div>
+
+      <div id="tab-orders" class="tab-content">
+        <h3>Lista de Pedidos</h3>
+        <div id="admin-orders-list"></div>
+      </div>
+
+      <div id="tab-chat" class="tab-content">
+        <h3>Mensajes de Clientes</h3>
+        <div class="chat-admin-container">
+          <div id="chat-list" class="chat-list"></div>
+          <div class="chat-active">
+            <h4 id="active-chat-user">Selecciona un chat</h4>
+            <div id="admin-chat-messages" class="chat-messages"></div>
+            <div class="chat-input-area">
+              <input type="text" id="admin-chat-input" placeholder="Responder...">
+              <button onclick="sendAdminMessage()">Enviar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBtkpwXWWJUDDab3RLuzxS7oAOmFv-LpG8",
+      authDomain: "adrivargas-f9558.firebaseapp.com",
+      projectId: "adrivargas-f9558",
+      storageBucket: "adrivargas-f9558.firebasestorage.app",
+      messagingSenderId: "831196414635",
+      appId: "1:831196414635:web:63c469d105337a7b976dee"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+    const auth = firebase.auth();
+
+    let selectedChatId = null;
+
+    // Autenticación
+    auth.onAuthStateChanged(user => {
+      if(user) {
+        document.getElementById("login-section").style.display = "none";
+        document.getElementById("admin-section").style.display = "block";
+        document.getElementById("logout-btn").style.display = "inline-block";
+        loadProducts();
+        loadOrders();
+        loadChats();
+      } else {
+        document.getElementById("login-section").style.display = "block";
+        document.getElementById("admin-section").style.display = "none";
+        document.getElementById("logout-btn").style.display = "none";
+      }
+    });
+
+    function login() {
+      const email = document.getElementById("admin-email").value;
+      const pass = document.getElementById("admin-pass").value;
+      auth.signInWithEmailAndPassword(email, pass).catch(err => alert("Error: " + err.message));
+    }
+
+    function logout() {
+      auth.signOut();
+    }
+
+    function showTab(tabId) {
+      document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
+      document.getElementById(tabId).classList.add("active");
+    }
+
+    // 1. Agregar Producto con foto desde celular
+    function addProduct() {
+      const name = document.getElementById("p-name").value;
+      const price = document.getElementById("p-price").value;
+      const file = document.getElementById("p-file").files[0];
+
+      if(!name || !price || !file) {
+        alert("Por favor completa todos los campos y selecciona una imagen.");
+        return;
+      }
+
+      const fileRef = storage.ref(`products/${Date.now()}_${file.name}`);
+      fileRef.put(file).then(snapshot => snapshot.ref.getDownloadURL()).then(url => {
+        return db.collection("products").add({
+          name: name,
+          price: Number(price),
+          imageUrl: url,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }).then(() => {
+        alert("¡Producto añadido con éxito!");
+        document.getElementById("p-name").value = "";
+        document.getElementById("p-price").value = "";
+        document.getElementById("p-file").value = "";
+      }).catch(err => alert("Error al subir el producto: " + err.message));
+    }
+
+    // Cargar productos con opciones de Editar/Eliminar
+    function loadProducts() {
+      db.collection("products").onSnapshot(snapshot => {
+        const list = document.getElementById("admin-product-list");
+        list.innerHTML = "";
+        snapshot.forEach(doc => {
+          const p = doc.data();
+          list.innerHTML += `
+            <div class="card">
+              <img src="${p.imageUrl}" alt="${p.name}">
+              <div class="card-body">
+                <h3>${p.name}</h3>
+                <p class="price">$${p.price}</p>
+                <button class="btn btn-secondary" onclick="editProduct('${doc.id}', '${p.name}', ${p.price})">✏️ Editar</button>
+                <button class="btn btn-danger" onclick="deleteProduct('${doc.id}')">🗑️ Eliminar</button>
+              </div>
+            </div>
+          `;
+        });
+      });
+    }
+
+    // Editar Nombre y Precio
+    function editProduct(id, oldName, oldPrice) {
+      const newName = prompt("Nuevo nombre del producto:", oldName);
+      const newPrice = prompt("Nuevo precio:", oldPrice);
+
+      if(newName && newPrice) {
+        db.collection("products").doc(id).update({
+          name: newName,
+          price: Number(newPrice)
+        });
+      }
+    }
+
+    // Eliminar Producto
+    function deleteProduct(id) {
+      if(confirm("¿Estás seguro de que deseas eliminar este producto?")) {
+        db.collection("products").doc(id).delete();
+      }
+    }
+
+    // 2. Pedidos y cambiar estatus
+    function loadOrders() {
+      db.collection("orders").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+        const list = document.getElementById("admin-orders-list");
+        list.innerHTML = "";
+        snapshot.forEach(doc => {
+          const o = doc.data();
+          const itemsText = o.items.map(i => i.name).join(", ");
+          list.innerHTML += `
+            <div class="order-card">
+              <h4>Cliente: ${o.customerName} (${o.phone})</h4>
+              <p><strong>Artículos:</strong> ${itemsText}</p>
+              <p><strong>Total:</strong> $${o.total}</p>
+              <label>Estado del pedido:</label>
+              <select onchange="updateOrderStatus('${doc.id}', this.value)">
+                <option value="Pendiente" ${o.status==='Pendiente'?'selected':''}>Pendiente</option>
+                <option value="En Proceso" ${o.status==='En Proceso'?'selected':''}>En Proceso</option>
+                <option value="Enviado" ${o.status==='Enviado'?'selected':''}>Enviado</option>
+                <option value="Entregado" ${o.status==='Entregado'?'selected':''}>Entregado</option>
+                <option value="Cancelado" ${o.status==='Cancelado'?'selected':''}>Cancelado</option>
+              </select>
+            </div>
+          `;
+        });
+      });
+    }
+
+    function updateOrderStatus(orderId, newStatus) {
+      db.collection("orders").doc(orderId).update({ status: newStatus });
+    }
+
+    // 3. Responder Chat
+    function loadChats() {
+      db.collection("chats").onSnapshot(snapshot => {
+        const list = document.getElementById("chat-list");
+        list.innerHTML = "";
+        snapshot.forEach(doc => {
+          list.innerHTML += `
+            <div class="chat-item" onclick="openAdminChat('${doc.id}')">
+              <strong>ID: ${doc.id}</strong>
+              <p>${doc.data().lastMessage || 'Mensaje'}</p>
+            </div>
+          `;
+        });
+      });
+    }
+
+    function openAdminChat(chatId) {
+      selectedChatId = chatId;
+      document.getElementById("active-chat-user").innerText = "Chat con " + chatId;
+      
+      db.collection("chats").doc(chatId).collection("messages").orderBy("timestamp", "asc")
+        .onSnapshot(snapshot => {
+          const box = document.getElementById("admin-chat-messages");
+          box.innerHTML = "";
+          snapshot.forEach(doc => {
+            const msg = doc.data();
+            box.innerHTML += `<div class="msg ${msg.sender}">${msg.text}</div>`;
+          });
+          box.scrollTop = box.scrollHeight;
+        });
+    }
+
+    function sendAdminMessage() {
+      const text = document.getElementById("admin-chat-input").value;
+      if(!text || !selectedChatId) return;
+
+      db.collection("chats").doc(selectedChatId).collection("messages").add({
+        sender: "admin",
+        text: text,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      document.getElementById("admin-chat-input").value = "";
+    }
+  </script>
+</body>
+</html>
