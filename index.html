@@ -141,7 +141,7 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" id="searchInput" placeholder="Buscar vestidos, blusas..." oninput="filterProducts()">
       </div>
-     <div class="filters" id="categoryFilters">
+      <div class="filters" id="categoryFilters">
         <button class="filter-chip active" data-filter="all" onclick="setCategory('all')">Todo</button>
       </div>
       <button id="adminAddBtn" class="whatsapp-btn" style="display:none; background:var(--text-primary); margin-bottom:15px;" onclick="openAddModal()">
@@ -217,7 +217,7 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
       </div>
       <input type="text" id="newProdName" class="form-input" placeholder="Nombre de la prenda">
       <input type="number" id="newProdPrice" class="form-input" placeholder="Precio ($)">
-     <input type="text" id="newProdCat" class="form-input" placeholder="Categoría (ej: Vestidos, Zapatos, Accesorios)">
+      <input type="text" id="newProdCat" class="form-input" placeholder="Categoría (ej: Vestidos, Zapatos, Accesorios)">
       <label style="font-size:12px; margin-bottom:5px; display:block;">Sube una foto:</label>
       <input type="file" id="newProdImg" class="form-input" accept="image/*" capture="environment">
       <button class="btn-full" onclick="saveProduct()">Guardar Producto</button>
@@ -251,7 +251,7 @@ let allProducts = [];
 let isAdmin = false;
 let currentCategory = 'all';
 let currentSearch = '';
-let activeAdminChatUser = null; // Para saber qué chat está viendo el admin
+let activeAdminChatUser = null;
 
 // Autenticación
 auth.onAuthStateChanged(user => {
@@ -295,14 +295,30 @@ function loadProducts() {
   db.collection('products').orderBy('createdAt', 'desc').onSnapshot(snap => {
     allProducts = [];
     snap.forEach(doc => allProducts.push({ id: doc.id, ...doc.data() }));
+    renderCategories();
     renderProducts();
   });
+}
+
+function renderCategories() {
+  const container = document.getElementById('categoryFilters');
+  const categories = [...new Set(allProducts.map(p => p.category ? p.category.toLowerCase().trim() : ''))].filter(Boolean);
+  
+  let html = `<button class="filter-chip ${currentCategory === 'all' ? 'active' : ''}" data-filter="all" onclick="setCategory('all')">Todo</button>`;
+  
+  categories.forEach(cat => {
+    const formattedCat = cat.charAt(0).toUpperCase() + cat.slice(1);
+    const isActive = currentCategory === cat ? 'active' : '';
+    html += `<button class="filter-chip ${isActive}" data-filter="${cat}" onclick="setCategory('${cat}')">${formattedCat}</button>`;
+  });
+  
+  container.innerHTML = html;
 }
 
 function renderProducts() {
   const grid = document.getElementById('productGrid');
   let filtered = allProducts.filter(p => {
-    const matchCat = currentCategory === 'all' || p.category === currentCategory;
+    const matchCat = currentCategory === 'all' || (p.category && p.category.toLowerCase().trim() === currentCategory);
     const matchSearch = p.name.toLowerCase().includes(currentSearch.toLowerCase());
     return matchCat && matchSearch;
   });
@@ -331,7 +347,7 @@ function renderProducts() {
 
 function setCategory(cat) {
   currentCategory = cat;
-  document.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c.dataset.filter === cat));
+  renderCategories();
   renderProducts();
 }
 function filterProducts() { currentSearch = document.getElementById('searchInput').value; renderProducts(); }
@@ -341,10 +357,10 @@ function openAddModal() { document.getElementById('addProductModal').classList.a
 function saveProduct() {
   const name = document.getElementById('newProdName').value;
   const price = document.getElementById('newProdPrice').value;
-  const cat = document.getElementById('newProdCat').value;
+  const cat = document.getElementById('newProdCat').value.trim();
   const file = document.getElementById('newProdImg').files[0];
 
-  if(!name || !price || !file) return alert("Completa nombre, precio y foto");
+  if(!name || !price || !cat || !file) return alert("Completa nombre, precio, categoría y foto");
 
   showToast('Subiendo foto...');
   const ref = storage.ref(`products/${Date.now()}_${file.name}`);
@@ -354,6 +370,11 @@ function saveProduct() {
     });
   }).then(() => {
     closeModals();
+    // Limpiar campos
+    document.getElementById('newProdName').value = '';
+    document.getElementById('newProdPrice').value = '';
+    document.getElementById('newProdCat').value = '';
+    document.getElementById('newProdImg').value = '';
     showToast('¡Producto agregado!');
   }).catch(err => alert("Error: " + err.message));
 }
