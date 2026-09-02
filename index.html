@@ -8,22 +8,19 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#fafafa;--surface:#fff;--surface-muted:#f5f5f5;--surface-raised:#fff;
-  --text-primary:#111;--text-secondary:#555;--text-tertiary:#888;--text-quaternary:#bbb;
-  --border:#e5e5e5;--accent:#2563eb;--positive:#16a34a;--warning:#f59e0b;--danger:#dc2626;
+  --bg:#FDF8F3;--surface:#FFFFFF;--surface-muted:#F5EDE4;--surface-raised:#FFFFFF;
+  --text-primary:#2C1810;--text-secondary:#6B5B4F;--text-tertiary:#A89484;--text-quaternary:#D4C4B0;
+  --border:#E8DDD0;--accent:#C4785A;--positive:#16a34a;--warning:#f59e0b;--danger:#dc2626;
   --chart-1:#2563eb;--chart-2:#dc2626;--chart-3:#16a34a;--chart-4:#7c3aed;--chart-5:#9ca3af;
   --radius-sm:6px;--radius-md:10px;--radius-lg:12px;--radius-full:999px;
   --shadow-sm:0 1px 2px rgba(0,0,0,0.04);--shadow-md:0 4px 12px rgba(0,0,0,0.08);
   --transition:0.15s ease-out;
 }
-@media (prefers-color-scheme:dark){
-  :root{--bg:#0a0a0a;--surface:#141414;--surface-muted:#1a1a1a;--surface-raised:#1e1e1e;
-    --text-primary:#f0f0f0;--text-secondary:#a0a0a0;--text-tertiary:#666;--text-quaternary:#444;
-    --border:#2a2a2a;}
+
 }
 * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
 html,body { height:100%; overflow:hidden; }
-body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--bg); color:var(--text-primary); }
+body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--bg) !important; color:var(--text-primary); }
 #app { max-width:480px; margin:0 auto; height:100vh; display:flex; flex-direction:column; position:relative; }
 
 /* ===== TAB BAR ===== */
@@ -173,6 +170,7 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
 ::-webkit-scrollbar-track { background:transparent; }
 ::-webkit-scrollbar-thumb { background:var(--border); border-radius:var(--radius-full); }
 </style>
+<base target="_blank">
 </head>
 <body>
 
