@@ -240,8 +240,8 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
           <input type="number" id="newProdMinStock" class="form-input" placeholder="Mínimo" value="3">
         </div>
       </div>
-      <label style="font-size:12px; margin-bottom:5px; display:block;">Sube una foto:</label>
-      <input type="file" id="newProdImg" class="form-input" accept="image/*" capture="environment">
+      <label style="font-size:12px; margin-bottom:5px; display:block;">Selecciona una foto:</label>
+      <input type="file" id="newProdImg" class="form-input" accept="image/*">
       <button class="btn-full" onclick="saveProduct()">Guardar Producto</button>
     </div>
   </div>
@@ -348,12 +348,13 @@ function saveLogo() {
   const file = document.getElementById('newLogoImg').files[0];
   if(!file) return alert("Selecciona una imagen para el logo");
 
+  closeModals();
   showToast('Subiendo logo...');
+
   const ref = storage.ref(`logo/store_logo_${Date.now()}`);
   ref.put(file).then(snap => snap.ref.getDownloadURL()).then(url => {
     return db.collection('config').doc('store').set({ logoUrl: url }, { merge: true });
   }).then(() => {
-    closeModals();
     document.getElementById('newLogoImg').value = '';
     loadLogo();
     showToast('¡Logo actualizado con éxito!');
@@ -483,7 +484,8 @@ function saveProduct() {
   if(!name || !price || !cat) return alert("Completa al menos el nombre, precio y categoría");
   if(!editId && !file) return alert("Selecciona una foto para el nuevo producto");
 
-  showToast(editId ? 'Actualizando producto...' : 'Subiendo foto y producto...');
+  closeModals();
+  showToast(editId ? 'Actualizando producto...' : 'Subiendo producto...');
 
   const saveData = (imageUrl) => {
     const dataObj = {
@@ -506,8 +508,7 @@ function saveProduct() {
     }
 
     promise.then(() => {
-      closeModals();
-      showToast(editId ? '¡Producto actualizado con éxito!' : '¡Producto agregado con éxito! Ya puedes subir otro.');
+      showToast(editId ? '¡Producto actualizado!' : '¡Producto agregado con éxito!');
     }).catch(err => alert("Error: " + err.message));
   };
 
@@ -727,4 +728,5 @@ renderCart();
 updateCartBadge();
 </script>
 </body>
+</html>
 </html>
