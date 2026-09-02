@@ -50,16 +50,19 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
 
 /* ===== PRODUCT GRID ===== */
 .product-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
-.product-card { border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden; background:var(--surface); cursor:pointer; transition:transform var(--transition), box-shadow var(--transition); box-shadow:var(--shadow-sm); display:flex; flex-direction:column; }
+.product-card { border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden; background:var(--surface); cursor:pointer; transition:transform var(--transition), box-shadow var(--transition); box-shadow:var(--shadow-sm); display:flex; flex-direction:column; position:relative; }
 .product-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-md); }
 .product-img { height:170px; display:flex; align-items:center; justify-content:center; font-size:56px; position:relative; background:var(--surface-muted); }
 .product-img img { width:100%; height:100%; object-fit:cover; }
 .product-info { padding:12px; flex:1; display:flex; flex-direction:column; }
 .product-name { font-size:14px; font-weight:600; margin-bottom:4px; line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.product-details-text { font-size:11px; color:var(--text-secondary); margin-bottom:4px; }
 .product-price { font-size:17px; font-weight:700; margin-top:auto; }
 .product-actions { display:flex; gap:6px; margin-top:10px; }
 .btn-sm { flex:1; padding:7px 8px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--surface); font-size:12px; font-weight:500; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:4px; color:var(--text-secondary); transition:all var(--transition); }
 .btn-sm:hover { background:var(--surface-muted); }
+.out-of-stock-overlay { position:absolute; inset:0; background:rgba(255,255,255,0.8); display:flex; align-items:center; justify-content:center; font-weight:700; color:var(--danger); font-size:14px; text-align:center; padding:10px; z-index:2; }
+.stock-warning-badge { background:#fef3c7; color:#d97706; font-size:10px; padding:2px 6px; border-radius:var(--radius-full); font-weight:600; display:inline-block; margin-bottom:4px; }
 
 /* ===== CART ===== */
 .cart-item { display:flex; gap:14px; padding:14px; border:1px solid var(--border); border-radius:var(--radius-md); margin-bottom:10px; background:var(--surface); box-shadow:var(--shadow-sm); }
@@ -224,7 +227,19 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
       </div>
       <input type="text" id="newProdName" class="form-input" placeholder="Nombre de la prenda">
       <input type="number" id="newProdPrice" class="form-input" placeholder="Precio ($)">
-      <input type="text" id="newProdCat" class="form-input" placeholder="Categoría (ej: Vestidos, Zapatos, Accesorios)">
+      <input type="text" id="newProdCat" class="form-input" placeholder="Categoría (ej: Vestidos, Zapatos)">
+      <input type="text" id="newProdSize" class="form-input" placeholder="Talla(s) (ej: S, M, L o Única)">
+      <input type="text" id="newProdColors" class="form-input" placeholder="Color(es) (ej: Rojo, Negro, Azul)">
+      <div style="display:flex; gap:10px;">
+        <div style="flex:1;">
+          <label style="font-size:12px; margin-bottom:3px; display:block;">Stock inicial:</label>
+          <input type="number" id="newProdStock" class="form-input" placeholder="Cantidad" value="10">
+        </div>
+        <div style="flex:1;">
+          <label style="font-size:12px; margin-bottom:3px; display:block;">Stock mínimo de alerta:</label>
+          <input type="number" id="newProdMinStock" class="form-input" placeholder="Mínimo" value="3">
+        </div>
+      </div>
       <label style="font-size:12px; margin-bottom:5px; display:block;">Sube una foto:</label>
       <input type="file" id="newProdImg" class="form-input" accept="image/*" capture="environment">
       <button class="btn-full" onclick="saveProduct()">Guardar Producto</button>
@@ -376,6 +391,18 @@ function renderProducts() {
   });
 
   grid.innerHTML = filtered.map(p => {
+    const stock = Number(p.stock ?? 10);
+    const minStock = Number(p.minStock ?? 2);
+    const isOut = stock <= 0;
+
+    let warningBadge = '';
+    if(isAdmin && !isOut && stock <= minStock) {
+      warningBadge = `<div class="stock-warning-badge">⚠️ Stock bajo (${stock} restantes)</div>`;
+    }
+
+    const outOverlay = isOut ? `<div class="out-of-stock-overlay">No disponible</div>` : '';
+    const addBtn = isOut ? '' : `<button class="btn-sm" style="background:var(--text-primary); color:white;" onclick="addToCart('${p.id}')">Agregar</button>`;
+
     const adminControls = isAdmin ? `
       <div style="display:flex; gap:5px; margin-top:5px;">
         <button class="btn-sm" style="background:#dc2626; color:#fff;" onclick="deleteProduct('${p.id}')">Eliminar</button>
@@ -384,12 +411,15 @@ function renderProducts() {
     
     return `
     <div class="product-card">
+      ${outOverlay}
       <div class="product-img"><img src="${p.image || 'https://via.placeholder.com/150'}" alt="${p.name}"></div>
       <div class="product-info">
         <div class="product-name">${p.name}</div>
+        <div class="product-details-text">Talla: ${p.size || 'Única'} | Color: ${p.colors || 'Varios'}</div>
+        ${warningBadge}
         <div class="product-price">$${p.price}</div>
         <div class="product-actions">
-          <button class="btn-sm" style="background:var(--text-primary); color:white;" onclick="addToCart('${p.id}')">Agregar</button>
+          ${addBtn}
         </div>
         ${adminControls}
       </div>
@@ -410,21 +440,37 @@ function saveProduct() {
   const name = document.getElementById('newProdName').value;
   const price = document.getElementById('newProdPrice').value;
   const cat = document.getElementById('newProdCat').value.trim();
+  const size = document.getElementById('newProdSize').value.trim();
+  const colors = document.getElementById('newProdColors').value.trim();
+  const stock = document.getElementById('newProdStock').value;
+  const minStock = document.getElementById('newProdMinStock').value;
   const file = document.getElementById('newProdImg').files[0];
 
-  if(!name || !price || !cat || !file) return alert("Completa nombre, precio, categoría y foto");
+  if(!name || !price || !cat || !file) return alert("Completa al menos el nombre, precio, categoría y foto");
 
   showToast('Subiendo foto...');
   const ref = storage.ref(`products/${Date.now()}_${file.name}`);
   ref.put(file).then(snap => snap.ref.getDownloadURL()).then(url => {
     return db.collection('products').add({
-      name, price: Number(price), category: cat, image: url, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      name, 
+      price: Number(price), 
+      category: cat, 
+      size: size || 'Única', 
+      colors: colors || 'Único', 
+      stock: Number(stock || 10), 
+      minStock: Number(minStock || 2), 
+      image: url, 
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
   }).then(() => {
     closeModals();
     document.getElementById('newProdName').value = '';
     document.getElementById('newProdPrice').value = '';
     document.getElementById('newProdCat').value = '';
+    document.getElementById('newProdSize').value = '';
+    document.getElementById('newProdColors').value = '';
+    document.getElementById('newProdStock').value = '10';
+    document.getElementById('newProdMinStock').value = '3';
     document.getElementById('newProdImg').value = '';
     showToast('¡Producto agregado!');
   }).catch(err => alert("Error: " + err.message));
@@ -439,8 +485,17 @@ function deleteProduct(id) {
 // 4. CARRITO Y PEDIDOS
 function addToCart(id) {
   const p = allProducts.find(x => x.id === id);
+  if(!p || (p.stock ?? 10) <= 0) return alert("Este producto ya no está disponible");
+
   const existing = cart.find(item => item.id === id);
-  if(existing) existing.qty++; else cart.push({id, qty:1, name: p.name, price: p.price, image: p.image});
+  const currentQtyInCart = existing ? existing.qty : 0;
+
+  if(currentQtyInCart + 1 > p.stock) {
+    return alert("No hay más stock disponible para este producto");
+  }
+
+  if(existing) existing.qty++; 
+  else cart.push({id, qty:1, name: p.name, price: p.price, image: p.image});
   saveCart(); renderCart(); showToast('Añadido al carrito');
 }
 
@@ -492,11 +547,26 @@ function sendWhatsAppOrder() {
   });
   text += `\nTotal: $${total}\nMi celular es: ${phone}`;
 
-  db.collection('orders').add({
-    clientId, customerName: name, phone, items: cart, total, status: 'Pendiente', createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  // Descontar stock en Firestore de manera automática
+  const batch = db.batch();
+  cart.forEach(item => {
+    const prodRef = db.collection('products').doc(item.id);
+    const originalProd = allProducts.find(p => p.id === item.id);
+    if(originalProd) {
+      const newStock = Math.max(0, (originalProd.stock || 10) - item.qty);
+      batch.update(prodRef, { stock: newStock });
+    }
+  });
+
+  batch.commit().then(() => {
+    return db.collection('orders').add({
+      clientId, customerName: name, phone, items: cart, total, status: 'Pendiente', createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
   }).then(() => {
     cart = []; saveCart(); renderCart(); switchView('pedidos');
     window.open('https://wa.me/' + whatsappNumber + '?text=' + encodeURIComponent(text), '_blank');
+  }).catch(err => {
+    alert("Error al procesar el pedido: " + err.message);
   });
 }
 
