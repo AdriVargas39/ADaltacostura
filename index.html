@@ -24,7 +24,17 @@
 html,body { height:100%; overflow:hidden; }
 body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--bg) !important; color:var(--text-primary); }
 #app { max-width:480px; margin:0 auto; height:100vh; height:100dvh; display:flex; flex-direction:column; position:relative; }
- 
+
+/* ===== APP HEADER (LOGO) ===== */
+.app-header { display:flex; align-items:center; gap:10px; padding:10px 14px; background:var(--surface); border-bottom:1px solid var(--border); flex-shrink:0; position:sticky; top:0; z-index:60; }
+.header-logo-btn { width:42px; height:42px; border-radius:50%; border:1px solid var(--border); background:var(--surface-muted); display:flex; align-items:center; justify-content:center; cursor:default; position:relative; padding:0; flex-shrink:0; transition:transform var(--transition); }
+.header-logo-btn img { width:100%; height:100%; object-fit:cover; border-radius:50%; display:block; }
+.header-logo-btn svg { width:22px; height:22px; color:var(--text-tertiary); }
+.header-logo-btn.admin { cursor:pointer; border-color:var(--text-quaternary); }
+.header-logo-btn.admin:hover { transform:scale(1.05); }
+.header-logo-btn.admin::after { content:'✎'; position:absolute; bottom:-2px; right:-2px; width:16px; height:16px; background:var(--text-primary); color:var(--surface); border-radius:50%; font-size:9px; display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow-sm); }
+.header-title { font-size:15px; font-weight:600; }
+
 /* ===== TAB BAR ===== */
 .tab-bar { display:flex; gap:2px; padding:6px 8px 8px; border-bottom:1px solid var(--border); background:var(--surface); position:sticky; top:0; z-index:50; flex-shrink:0; }
 .tab-btn { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 2px; border:none; background:transparent; border-radius:var(--radius-md); cursor:pointer; color:var(--text-tertiary); font-size:11px; font-weight:500; transition:all var(--transition); position:relative; }
@@ -32,13 +42,13 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
 .tab-btn svg { width:22px; height:22px; stroke-width:1.8; }
 .tab-logo-img { width:22px; height:22px; border-radius:50%; object-fit:cover; display:block; }
 .badge { position:absolute; top:2px; right:6px; min-width:16px; height:16px; background:var(--text-primary); color:var(--surface); border-radius:var(--radius-full); font-size:10px; display:flex; align-items:center; justify-content:center; font-weight:600; padding:0 4px; }
- 
+
 /* ===== VIEWS ===== */
 .views { flex:1; overflow-y:auto; overflow-x:hidden; position:relative; scroll-behavior:smooth; }
 .view { display:none; padding:12px; min-height:100%; animation:fadeIn 0.2s ease-out; }
 .view.active { display:block; }
 @keyframes fadeIn { from{opacity:0;transform:translateY(6px);} to{opacity:1;transform:translateY(0);} }
- 
+
 /* ===== SEARCH & FILTERS ===== */
 .search-box { display:flex; align-items:center; gap:10px; padding:10px 14px; border:1px solid var(--border); border-radius:var(--radius-md); margin-bottom:12px; background:var(--surface-muted); }
 .search-box svg { color:var(--text-quaternary); flex-shrink:0; }
@@ -47,7 +57,7 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
 .filters::-webkit-scrollbar { display:none; }
 .filter-chip { padding:7px 16px; border:1px solid var(--border); border-radius:var(--radius-full); background:var(--surface); font-size:13px; cursor:pointer; white-space:nowrap; color:var(--text-secondary); font-weight:500; transition:all var(--transition); }
 .filter-chip.active { background:var(--text-primary); color:var(--surface); border-color:var(--text-primary); }
- 
+
 /* ===== PRODUCT GRID ===== */
 .product-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
 .product-card { border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden; background:var(--surface); cursor:pointer; transition:transform var(--transition), box-shadow var(--transition); box-shadow:var(--shadow-sm); display:flex; flex-direction:column; position:relative; }
@@ -63,7 +73,7 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
 .btn-sm:hover { background:var(--surface-muted); }
 .out-of-stock-overlay { position:absolute; inset:0; background:rgba(255,255,255,0.85); display:flex; align-items:center; justify-content:center; font-weight:700; color:var(--danger); font-size:14px; text-align:center; padding:10px; z-index:2; }
 .stock-warning-badge { background:#fef3c7; color:#d97706; font-size:10px; padding:2px 6px; border-radius:var(--radius-full); font-weight:600; display:inline-block; margin-bottom:4px; }
- 
+
 /* ===== CART ===== */
 .cart-item { display:flex; gap:14px; padding:14px; border:1px solid var(--border); border-radius:var(--radius-md); margin-bottom:10px; background:var(--surface); box-shadow:var(--shadow-sm); }
 .cart-img { width:76px; height:76px; border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; font-size:32px; flex-shrink:0; background:var(--surface-muted); overflow:hidden; }
@@ -81,7 +91,7 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
 .total-bar { display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-top:1px solid var(--border); margin-top:12px; }
 .total-value { font-size:22px; font-weight:700; }
 .whatsapp-btn { display:flex; align-items:center; justify-content:center; gap:10px; width:100%; padding:14px; border:none; border-radius:var(--radius-md); background:var(--positive); color:#fff; font-size:15px; font-weight:600; cursor:pointer; margin-top:16px; box-shadow:0 2px 8px rgba(22,163,74,0.25); }
- 
+
 /* ===== ORDERS & ADMIN ===== */
 .admin-toggle { display:flex; align-items:center; gap:10px; padding:10px 14px; background:var(--surface-muted); border-radius:var(--radius-md); margin-bottom:14px; font-size:13px; cursor:pointer; border:1px solid var(--border); font-weight:500; }
 .order-card { padding:14px; border:1px solid var(--border); border-radius:var(--radius-md); margin-bottom:10px; background:var(--surface); box-shadow:var(--shadow-sm); }
@@ -91,7 +101,7 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
 .status-Enviado { background:#dbeafe; color:#2563eb; }
 .status-Entregado { background:#dcfce3; color:#16a34a; }
 .order-actions { display:flex; gap:6px; margin-top:10px; flex-wrap:wrap; }
- 
+
 /* ===== CHAT ===== */
 .chat-container { display:flex; flex-direction:column; height:calc(100vh - 200px); min-height:320px; border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden; background:var(--surface); }
 .chat-messages { flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:10px; }
@@ -101,7 +111,7 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
 .chat-input-area { display:flex; gap:8px; padding:10px 12px; border-top:1px solid var(--border); background:var(--surface); }
 .chat-input { flex:1; padding:10px 14px; border:1px solid var(--border); border-radius:var(--radius-md); background:var(--surface-muted); outline:none; font-size:14px; }
 .chat-send { width:40px; height:40px; border:none; border-radius:var(--radius-md); background:var(--text-primary); color:var(--surface); cursor:pointer; display:flex; align-items:center; justify-content:center; }
- 
+
 /* ===== MODAL & FORMS ===== */
 .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); display:none; align-items:flex-end; justify-content:center; z-index:100; }
 .modal-overlay.active { display:flex; }
@@ -115,15 +125,24 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
 .chat-list-item { padding:12px; border-bottom:1px solid var(--border); cursor:pointer; font-weight:500; font-size:14px;}
 .chat-list-item:hover { background:var(--surface-muted); }
 </style>
+<base target="_blank">
 </head>
 <body>
- 
+
 <div id="app">
+  <!-- APP HEADER: LOGO (solo el admin puede pincharlo para cambiarlo) -->
+  <div class="app-header">
+    <button id="headerLogoBtn" class="header-logo-btn" onclick="handleLogoClick()" title="Logo de la tienda">
+      <img id="headerLogoImg" src="" alt="Logo" style="display:none;">
+      <svg id="headerLogoSvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+    </button>
+    <span class="header-title">Tienda de Ropa</span>
+  </div>
+
   <!-- TAB BAR -->
   <div class="tab-bar">
     <button class="tab-btn active" data-view="catalogo" onclick="switchView('catalogo')">
-      <img id="navLogoImg" class="tab-logo-img" src="" alt="Logo" style="display:none;">
-      <svg id="navCatalogSvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       <span>Catálogo</span>
     </button>
     <button class="tab-btn" data-view="carrito" onclick="switchView('carrito')">
@@ -139,7 +158,7 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
       <span>Chat</span>
     </button>
   </div>
- 
+
   <div class="views">
     <!-- CATÁLOGO -->
     <div id="catalogo" class="view active">
@@ -154,13 +173,10 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
         <button class="whatsapp-btn" style="background:var(--text-primary); margin-top:0; margin-bottom:8px;" onclick="openAddModal()">
           ➕ Subir Prenda Nueva
         </button>
-        <button class="btn-full" style="background:var(--accent); font-size:13px; padding:10px;" onclick="openLogoModal()">
-          🖼️ Cambiar Logo de la Tienda
-        </button>
       </div>
       <div id="productGrid" class="product-grid">Cargando catálogo...</div>
     </div>
- 
+
     <!-- CARRITO -->
     <div id="carrito" class="view">
       <div id="cartItems"></div>
@@ -177,7 +193,7 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
         <button class="whatsapp-btn" onclick="sendWhatsAppOrder()">Pedir por WhatsApp</button>
       </div>
     </div>
- 
+
     <!-- PEDIDOS -->
     <div id="pedidos" class="view">
       <div class="admin-toggle" onclick="openLoginModal()">
@@ -187,7 +203,7 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
       </div>
       <div id="ordersList"></div>
     </div>
- 
+
     <!-- CHAT -->
     <div id="chat" class="view">
       <div id="adminChatListView" style="display:none;">
@@ -203,7 +219,7 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
       </div>
     </div>
   </div>
- 
+
   <!-- MODALS -->
   <!-- Admin Login Modal -->
   <div id="loginModal" class="modal-overlay" onclick="closeModals(event)">
@@ -218,7 +234,7 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
       <button class="btn-full" style="background:#dc2626; margin-top:10px; display:none;" id="logoutBtn" onclick="logoutAdmin()">Cerrar Sesión</button>
     </div>
   </div>
- 
+
   <!-- Add/Edit Product Modal -->
   <div id="addProductModal" class="modal-overlay" onclick="closeModals(event)">
     <div class="modal" onclick="event.stopPropagation()">
@@ -247,7 +263,7 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
       <button class="btn-full" onclick="saveProduct()">Guardar Producto</button>
     </div>
   </div>
- 
+
   <!-- Logo Modal -->
   <div id="logoModal" class="modal-overlay" onclick="closeModals(event)">
     <div class="modal" onclick="event.stopPropagation()">
@@ -260,10 +276,10 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
       <button class="btn-full" onclick="saveLogo()">Guardar Logo</button>
     </div>
   </div>
- 
+
   <div id="toast" class="toast"></div>
 </div>
- 
+
 <script>
 // 1. CONFIGURACIÓN FIREBASE
 const firebaseConfig = {
@@ -278,7 +294,7 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const storage = firebase.storage();
 const auth = firebase.auth();
- 
+
 // Variables Globales
 const whatsappNumber = "51999999999"; 
 const FALLBACK_IMG = 'data:image/svg+xml;utf8,' + encodeURIComponent(
@@ -291,7 +307,7 @@ let isAdmin = false;
 let currentCategory = 'all';
 let currentSearch = '';
 let activeAdminChatUser = null;
- 
+
 // Autenticación
 auth.onAuthStateChanged(user => {
   // Si nadie ha iniciado sesión todavía, autenticamos al cliente de forma anónima
@@ -303,11 +319,12 @@ auth.onAuthStateChanged(user => {
     });
     return; // este mismo listener se volverá a disparar cuando el login anónimo termine
   }
- 
+
   isAdmin = !user.isAnonymous;
   clientId = user.uid;
- 
+
   document.getElementById('adminLabel').textContent = isAdmin ? 'Modo vendedora (Activo)' : 'Modo cliente';
+  document.getElementById('headerLogoBtn').classList.toggle('admin', isAdmin);
   document.getElementById('adminControlsArea').style.display = isAdmin ? 'block' : 'none';
   document.getElementById('logoutBtn').style.display = isAdmin ? 'block' : 'none';
   
@@ -325,7 +342,7 @@ auth.onAuthStateChanged(user => {
   loadProducts();
   loadOrders();
 });
- 
+
 function openLoginModal() { document.getElementById('loginModal').classList.add('active'); }
 function openLogoModal() { 
   document.getElementById('newLogoImg').value = '';
@@ -336,7 +353,7 @@ function closeModals(e) {
     document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active')); 
   }
 }
- 
+
 function loginAdmin() {
   const email = document.getElementById('adminEmail').value;
   const pass = document.getElementById('adminPass').value;
@@ -345,28 +362,39 @@ function loginAdmin() {
   }).catch(e => alert("Error: " + e.message));
 }
 function logoutAdmin() { auth.signOut(); closeModals(); showToast('Sesión cerrada'); }
- 
+
 // 2. LOGO
 function loadLogo() {
   db.collection('config').doc('store').get().then(doc => {
+    const logoImg = document.getElementById('headerLogoImg');
+    const logoSvg = document.getElementById('headerLogoSvg');
     if(doc.exists && doc.data().logoUrl) {
-      const url = doc.data().logoUrl;
-      const logoImg = document.getElementById('navLogoImg');
-      const catalogSvg = document.getElementById('navCatalogSvg');
-      logoImg.src = url;
+      logoImg.src = doc.data().logoUrl;
       logoImg.style.display = 'block';
-      catalogSvg.style.display = 'none';
+      logoSvg.style.display = 'none';
+    } else {
+      logoImg.style.display = 'none';
+      logoSvg.style.display = 'block';
     }
   }).catch(() => {});
 }
- 
+
+// Pinchar el logo solo abre el cambio de logo si eres administradora
+function handleLogoClick() {
+  if(isAdmin) {
+    openLogoModal();
+  } else {
+    showToast('Solo la administradora puede cambiar el logo');
+  }
+}
+
 function saveLogo() {
   const file = document.getElementById('newLogoImg').files[0];
   if(!file) return alert("Selecciona una imagen para el logo");
- 
+
   closeModals();
   showToast('Subiendo logo...');
- 
+
   const ref = storage.ref(`logo/store_logo_${Date.now()}`);
   ref.put(file).then(snap => snap.ref.getDownloadURL()).then(url => {
     return db.collection('config').doc('store').set({ logoUrl: url }, { merge: true });
@@ -376,7 +404,7 @@ function saveLogo() {
     showToast('¡Logo actualizado con éxito!');
   }).catch(err => alert("Error al subir logo: " + err.message));
 }
- 
+
 // 3. PRODUCTOS
 function loadProducts() {
   db.collection('products').orderBy('createdAt', 'desc').onSnapshot(snap => {
@@ -390,7 +418,7 @@ function loadProducts() {
       `<div class="empty-state" style="grid-column:1/-1">No se pudo cargar el catálogo.<br><small>${escapeHtml(err.message)}</small></div>`;
   });
 }
- 
+
 function renderCategories() {
   const container = document.getElementById('categoryFilters');
   const categories = [...new Set(allProducts.map(p => p.category ? p.category.toLowerCase().trim() : ''))].filter(Boolean);
@@ -405,7 +433,7 @@ function renderCategories() {
   
   container.innerHTML = html;
 }
- 
+
 function renderProducts() {
   const grid = document.getElementById('productGrid');
   let filtered = allProducts.filter(p => {
@@ -413,20 +441,20 @@ function renderProducts() {
     const matchSearch = p.name.toLowerCase().includes(currentSearch.toLowerCase());
     return matchCat && matchSearch;
   });
- 
+
   grid.innerHTML = filtered.map(p => {
     const stock = Number(p.stock ?? 10);
     const minStock = Number(p.minStock ?? 2);
     const isOut = stock <= 0;
- 
+
     let warningBadge = '';
     if(isAdmin && !isOut && stock <= minStock) {
       warningBadge = `<div class="stock-warning-badge">⚠️ Stock bajo (${stock} restantes)</div>`;
     }
- 
+
     const outOverlay = isOut ? `<div class="out-of-stock-overlay">No disponible</div>` : '';
     const addBtn = isOut ? '' : `<button class="btn-sm" style="background:var(--text-primary); color:white;" onclick="addToCart('${p.id}')">Agregar</button>`;
- 
+
     const adminControls = isAdmin ? `
       <div style="display:flex; gap:5px; margin-top:5px;">
         <button class="btn-sm" style="background:var(--surface-muted);" onclick="openEditModal('${p.id}')">✏️ Editar</button>
@@ -452,14 +480,14 @@ function renderProducts() {
     </div>`;
   }).join('');
 }
- 
+
 function setCategory(cat) {
   currentCategory = cat;
   renderCategories();
   renderProducts();
 }
 function filterProducts() { currentSearch = document.getElementById('searchInput').value; renderProducts(); }
- 
+
 function openAddModal() {
   document.getElementById('modalProductTitle').textContent = 'Subir Prenda';
   document.getElementById('editProdId').value = '';
@@ -473,7 +501,7 @@ function openAddModal() {
   document.getElementById('newProdImg').value = '';
   document.getElementById('addProductModal').classList.add('active');
 }
- 
+
 function openEditModal(id) {
   const p = allProducts.find(x => x.id === id);
   if(!p) return;
@@ -489,7 +517,7 @@ function openEditModal(id) {
   document.getElementById('newProdImg').value = '';
   document.getElementById('addProductModal').classList.add('active');
 }
- 
+
 function saveProduct() {
   const editId = document.getElementById('editProdId').value;
   const name = document.getElementById('newProdName').value;
@@ -500,13 +528,13 @@ function saveProduct() {
   const stock = document.getElementById('newProdStock').value;
   const minStock = document.getElementById('newProdMinStock').value;
   const file = document.getElementById('newProdImg').files[0];
- 
+
   if(!name || !price || !cat) return alert("Completa al menos el nombre, precio y categoría");
   if(!editId && !file) return alert("Selecciona una foto para el nuevo producto");
- 
+
   closeModals();
   showToast(editId ? 'Actualizando producto...' : 'Subiendo producto...');
- 
+
   const saveData = (imageUrl) => {
     const dataObj = {
       name, 
@@ -518,7 +546,7 @@ function saveProduct() {
       minStock: Number(minStock || 3)
     };
     if(imageUrl) dataObj.image = imageUrl;
- 
+
     let promise;
     if(editId) {
       promise = db.collection('products').doc(editId).update(dataObj);
@@ -526,12 +554,12 @@ function saveProduct() {
       dataObj.createdAt = firebase.firestore.FieldValue.serverTimestamp();
       promise = db.collection('products').add(dataObj);
     }
- 
+
     promise.then(() => {
       showToast(editId ? '¡Producto actualizado!' : '¡Producto agregado con éxito!');
     }).catch(err => alert("Error: " + err.message));
   };
- 
+
   if(file) {
     const ref = storage.ref(`products/${Date.now()}_${file.name}`);
     ref.put(file).then(snap => snap.ref.getDownloadURL()).then(url => {
@@ -541,7 +569,7 @@ function saveProduct() {
     saveData(null);
   }
 }
- 
+
 function deleteProduct(id) {
   if(confirm("¿Seguro que deseas eliminar esta prenda?")) {
     db.collection('products').doc(id).delete().then(() => {
@@ -549,31 +577,31 @@ function deleteProduct(id) {
     });
   }
 }
- 
+
 // 4. CARRITO Y PEDIDOS
 function addToCart(id) {
   const p = allProducts.find(x => x.id === id);
   if(!p || (p.stock ?? 10) <= 0) return alert("Este producto ya no está disponible");
- 
+
   const existing = cart.find(item => item.id === id);
   const currentQtyInCart = existing ? existing.qty : 0;
- 
+
   if(currentQtyInCart + 1 > p.stock) {
     return alert("No hay más stock disponible para este producto");
   }
- 
+
   if(existing) existing.qty++; 
   else cart.push({id, qty:1, name: p.name, price: p.price, image: p.image});
   saveCart(); renderCart(); showToast('Añadido al carrito');
 }
- 
+
 function saveCart() { localStorage.setItem('tienda_cart', JSON.stringify(cart)); updateCartBadge(); }
 function updateCartBadge() { 
   const count = cart.reduce((s,i) => s + i.qty, 0); 
   document.getElementById('cartBadge').style.display = count > 0 ? 'flex' : 'none';
   document.getElementById('cartBadge').innerText = count;
 }
- 
+
 function renderCart() {
   const container = document.getElementById('cartItems');
   if(cart.length === 0) {
@@ -601,7 +629,7 @@ function renderCart() {
   }).join('');
   document.getElementById('cartTotal').innerText = '$' + total;
 }
- 
+
 function changeQty(index, delta) {
   const item = cart[index];
   if(!item) return;
@@ -613,14 +641,14 @@ function changeQty(index, delta) {
   item.qty = newQty;
   saveCart(); renderCart();
 }
- 
+
 function removeCart(index) { cart.splice(index, 1); saveCart(); renderCart(); }
- 
+
 function sendWhatsAppOrder() {
   const name = document.getElementById('orderName').value;
   const phone = document.getElementById('orderPhone').value;
   if(!name || !phone) return alert("Por favor ingresa tu nombre y celular");
- 
+
   let total = 0;
   let text = `¡Hola! Soy ${name}. Quiero hacer un pedido:\n\n`;
   cart.forEach(item => {
@@ -628,7 +656,7 @@ function sendWhatsAppOrder() {
     total += item.price * item.qty;
   });
   text += `\nTotal: $${total}\nMi celular es: ${phone}`;
- 
+
   const batch = db.batch();
   cart.forEach(item => {
     const prodRef = db.collection('products').doc(item.id);
@@ -638,7 +666,7 @@ function sendWhatsAppOrder() {
       batch.update(prodRef, { stock: newStock });
     }
   });
- 
+
   batch.commit().then(() => {
     return db.collection('orders').add({
       clientId, customerName: name, phone, items: cart, total, status: 'Pendiente', createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -650,7 +678,7 @@ function sendWhatsAppOrder() {
     alert("Error al procesar el pedido: " + err.message);
   });
 }
- 
+
 function loadOrders() {
   let query = isAdmin ? db.collection('orders') : db.collection('orders').where('clientId', '==', clientId);
   query.orderBy('createdAt', 'desc').onSnapshot(snap => {
@@ -664,7 +692,7 @@ function loadOrders() {
           <button class="btn-sm" onclick="changeStatus('${doc.id}', 'Enviado')">📦 Enviar</button>
           <button class="btn-sm" onclick="changeStatus('${doc.id}', 'Entregado')">✅ Entregar</button>
         </div>` : '';
- 
+
       list.innerHTML += `
         <div class="order-card">
           <div class="order-header">
@@ -682,9 +710,9 @@ function loadOrders() {
       `<div class="empty-state">No se pudieron cargar los pedidos.<br><small>${escapeHtml(err.message)}</small></div>`;
   });
 }
- 
+
 function changeStatus(id, status) { db.collection('orders').doc(id).update({status}); }
- 
+
 // 5. CHAT
 function loadClientChat() {
   db.collection('chats').doc(clientId).collection('messages').orderBy('timestamp', 'asc').onSnapshot(snap => {
@@ -697,7 +725,7 @@ function loadClientChat() {
     box.scrollTop = box.scrollHeight;
   }, err => console.error('Error cargando chat:', err));
 }
- 
+
 function loadAdminChats() {
   db.collection('chats').orderBy('lastUpdated', 'desc').onSnapshot(snap => {
     const list = document.getElementById('adminChatList');
@@ -707,7 +735,7 @@ function loadAdminChats() {
     });
   }, err => console.error('Error cargando lista de chats:', err));
 }
- 
+
 function openAdminChat(id) {
   activeAdminChatUser = id;
   document.getElementById('adminChatListView').style.display = 'none';
@@ -723,23 +751,23 @@ function openAdminChat(id) {
     box.scrollTop = box.scrollHeight;
   });
 }
- 
+
 function backToChatList() {
   activeAdminChatUser = null;
   document.getElementById('adminChatListView').style.display = 'block';
   document.getElementById('chatRoomView').style.display = 'none';
 }
- 
+
 function sendChat() {
   const input = document.getElementById('chatInput');
   const text = input.value.trim();
   if(!text) return;
- 
+
   const targetId = isAdmin ? activeAdminChatUser : clientId;
   const senderType = isAdmin ? 'admin' : 'client';
- 
+
   if(!targetId) return;
- 
+
   db.collection('chats').doc(targetId).collection('messages').add({
     text, sender: senderType, timestamp: firebase.firestore.FieldValue.serverTimestamp()
   });
@@ -747,7 +775,7 @@ function sendChat() {
   db.collection('chats').doc(targetId).set({ lastUpdated: firebase.firestore.FieldValue.serverTimestamp() }, {merge:true});
   input.value = '';
 }
- 
+
 // Utils
 function escapeHtml(str) {
   return String(str ?? '')
@@ -757,20 +785,20 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 }
- 
+
 function switchView(view) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById(view).classList.add('active');
   document.querySelector(`[data-view="${view}"]`).classList.add('active');
 }
- 
+
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
 }
- 
+
 renderCart();
 updateCartBadge();
 </script>
