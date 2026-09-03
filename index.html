@@ -265,7 +265,7 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
           <input type="number" id="newProdMinStock" class="form-input" placeholder="Mínimo" value="3">
         </div>
       </div>
-      <label style="font-size:12px; margin-bottom:5px; display:block;">Selecciona una foto (Galería o Archivos):</label>
+      <label style="font-size:12px; margin-bottom:5px; display:block;">Selecciona una foto (Opcional por ahora):</label>
       <input type="file" id="newProdImg" class="form-input">
       <button class="btn-full" onclick="saveProduct()">Guardar Producto</button>
     </div>
@@ -602,10 +602,9 @@ function saveProduct() {
   const file = document.getElementById('newProdImg').files[0];
 
   if(!name || !price || !cat) return alert("Completa al menos el nombre, precio y categoría");
-  if(!editId && !file) return alert("Selecciona una foto para el nuevo producto");
 
   closeModals();
-  showToast(editId ? 'Actualizando producto...' : 'Subiendo producto...');
+  showToast(editId ? 'Actualizando producto...' : 'Guardando producto...');
 
   const saveData = (imageUrl) => {
     const dataObj = {
@@ -613,7 +612,11 @@ function saveProduct() {
       size: size || 'Única', colors: colors || 'Único', 
       stock: Number(stock || 10), minStock: Number(minStock || 3)
     };
-    if(imageUrl) dataObj.image = imageUrl;
+    if(imageUrl) {
+      dataObj.image = imageUrl;
+    } else if (!editId) {
+      dataObj.image = FALLBACK_IMG; // Imagen por defecto si se crea sin foto
+    }
 
     let promise = editId ? db.collection('products').doc(editId).update(dataObj) : 
       db.collection('products').add({...dataObj, createdAt: firebase.firestore.FieldValue.serverTimestamp()});
@@ -653,9 +656,9 @@ function addToCart(id) {
 function saveCart() { localStorage.setItem('tienda_cart', JSON.stringify(cart)); updateCartBadge(); }
 function updateCartBadge() { 
   const count = cart.reduce((s,i) => s + i.qty, 0); 
-  document.getElementById('cartBadge').style.display = count > 0 ? 'flex' : 'none';
-  document.getElementById('cartBadge മറ്റൊരു', count);
-  document.getElementById('cartBadge').innerText = count;
+  const badge = document.getElementById('cartBadge');
+  badge.style.display = count > 0 ? 'flex' : 'none';
+  badge.innerText = count;
 }
 
 function renderCart() {
@@ -670,7 +673,7 @@ function renderCart() {
     total += item.price * item.qty;
     return `
       <div class="cart-item">
-        <div class="cart-img"><img src="${item.image}" onerror="this.onerror=null;this.src='${FALLBACK_IMG}';"></div>
+        <div class="cart-img"><img src="${item.image || FALLBACK_IMG}" onerror="this.onerror=null;this.src='${FALLBACK_IMG}';"></div>
         <div class="cart-details">
           <div class="cart-name">${escapeHtml(item.name)}</div>
           <div class="cart-price">$${item.price * item.qty}</div>
