@@ -279,7 +279,7 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
 
     <div id="chat" class="view">
       <div class="whatsapp-chat-card">
-        <p class="whatsapp-chat-intro">¿Tienes una pregunta sobre una prenda, un pedido o algo más? Escríbenos y te contactamos por WhatsApp.</p>
+        <p class="whatsapp-chat-intro">¿Tienes una pregunta sobre una prenda, un pedido o algo más? Escribe tu mensaje: se abrirá WhatsApp con todo listo, solo tienes que darle <strong>Enviar</strong> allí.</p>
         <input type="text" id="chatName" class="form-input" placeholder="Tu nombre completo">
         <textarea id="chatMessage" class="form-input" rows="4" placeholder="Escribe tu mensaje..." style="resize:vertical; font-family:inherit;"></textarea>
         <button class="whatsapp-btn" onclick="sendWhatsAppMessage()">
@@ -362,6 +362,25 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
     </div>
   </div>
 
+  <div id="whatsappQrModal" class="modal-overlay" onclick="closeModals(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <span class="modal-title">Continúa desde tu celular</span>
+        <button class="modal-close" onclick="closeModals()">✕</button>
+      </div>
+      <p style="font-size:13.5px; color:var(--text-secondary); line-height:1.5; margin-bottom:14px;">
+        Escanea este código con la cámara de <strong>tu celular</strong> (no de esta computadora) para abrir WhatsApp con tu mensaje ya listo.
+      </p>
+      <div style="display:flex; justify-content:center; margin-bottom:14px;">
+        <img id="whatsappQrImg" src="" alt="Código QR de WhatsApp" style="width:220px; height:220px; border:1px solid var(--border); border-radius:var(--radius-md); background:#fff;">
+      </div>
+      <p style="font-size:12px; color:var(--text-tertiary); text-align:center;">
+        ¿No puedes escanear? Copia el mensaje y escríbenos a nuestro WhatsApp desde tu celular.
+      </p>
+      <button class="btn-sm" style="width:100%; margin-top:10px;" onclick="copyWhatsAppMessage()">📋 Copiar mensaje</button>
+    </div>
+  </div>
+
   <div id="toast" class="toast"></div>
 </div>
 
@@ -381,8 +400,30 @@ const auth = firebase.auth();
 
 const whatsappNumber = "573138127403"; 
 
+let pendingWhatsAppText = '';
+
 function openWhatsApp(text) {
-  window.open('https://wa.me/' + whatsappNumber + '?text=' + encodeURIComponent(text), '_blank');
+  const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  const waUrl = 'https://wa.me/' + whatsappNumber + '?text=' + encodeURIComponent(text);
+
+  if (isMobile) {
+    window.open(waUrl, '_blank');
+    showToast('Se abrió WhatsApp con tu mensaje. No olvides darle "Enviar" allí.');
+    return;
+  }
+
+  // En computador: mostramos un QR para que la persona continúe desde SU celular,
+  // en vez de forzarla a vincular WhatsApp Web en un equipo que puede no ser suyo.
+  pendingWhatsAppText = text;
+  const qrImg = document.getElementById('whatsappQrImg');
+  qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=' + encodeURIComponent(waUrl);
+  document.getElementById('whatsappQrModal').classList.add('active');
+}
+
+function copyWhatsAppMessage() {
+  navigator.clipboard.writeText(pendingWhatsAppText)
+    .then(() => showToast('Mensaje copiado. Pégalo en WhatsApp desde tu celular.'))
+    .catch(() => showToast('No se pudo copiar. Selecciona y copia el mensaje manualmente.'));
 }
 const FALLBACK_IMG = 'data:image/svg+xml;utf8,' + encodeURIComponent(
   `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="#F5EDE4"/><text x="50%" y="50%" font-family="sans-serif" font-size="16" fill="#A89484" text-anchor="middle" dominant-baseline="middle">Sin imagen</text></svg>`
@@ -922,7 +963,6 @@ function sendWhatsAppMessage() {
   openWhatsApp(text);
 
   document.getElementById('chatMessage').value = '';
-  showToast('¡Listo! Te contactaremos pronto por WhatsApp.');
 }
 
 function escapeHtml(str) {
