@@ -40,7 +40,6 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
 .tab-btn { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 2px; border:none; background:transparent; border-radius:var(--radius-md); cursor:pointer; color:var(--text-tertiary); font-size:11px; font-weight:500; transition:all var(--transition); position:relative; }
 .tab-btn.active { color:var(--text-primary); background:var(--surface-muted); }
 .tab-btn svg { width:22px; height:22px; stroke-width:1.8; }
-.tab-logo-img { width:22px; height:22px; border-radius:50%; object-fit:cover; display:block; }
 .badge { position:absolute; top:2px; right:6px; min-width:16px; height:16px; background:var(--text-primary); color:var(--surface); border-radius:var(--radius-full); font-size:10px; display:flex; align-items:center; justify-content:center; font-weight:600; padding:0 4px; }
 
 /* ===== VIEWS ===== */
@@ -139,7 +138,6 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
 <body>
 
 <div id="app">
-  <!-- APP HEADER: LOGO (solo el admin puede pincharlo para cambiarlo) -->
   <div class="app-header">
     <button id="headerLogoBtn" class="header-logo-btn" onclick="handleLogoClick()" title="Logo de la tienda">
       <img id="headerLogoImg" src="" alt="Logo" style="display:none;">
@@ -147,7 +145,6 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
     </button>
   </div>
 
-  <!-- TAB BAR -->
   <div class="tab-bar">
     <button class="tab-btn active" data-view="catalogo" onclick="switchView('catalogo')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
@@ -168,7 +165,6 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
   </div>
 
   <div class="views">
-    <!-- CATÁLOGO -->
     <div id="catalogo" class="view active">
       <div class="search-box">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -185,7 +181,6 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
       <div id="productGrid" class="product-grid">Cargando catálogo...</div>
     </div>
 
-    <!-- CARRITO -->
     <div id="carrito" class="view">
       <div id="cartItems"></div>
       <div id="cartEmpty" class="empty-state">
@@ -202,7 +197,6 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
       </div>
     </div>
 
-    <!-- PEDIDOS -->
     <div id="pedidos" class="view">
       <div class="admin-toggle" onclick="openLoginModal()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -212,7 +206,6 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
       <div id="ordersList"></div>
     </div>
 
-    <!-- CHAT -->
     <div id="chat" class="view">
       <div id="adminChatListView" style="display:none;">
         <h3 style="margin-bottom:10px;">Chats de Clientes</h3>
@@ -229,7 +222,6 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
   </div>
 
   <!-- MODALS -->
-  <!-- Admin Login Modal -->
   <div id="loginModal" class="modal-overlay" onclick="closeModals(event)">
     <div class="modal" onclick="event.stopPropagation()">
       <div class="modal-header">
@@ -246,7 +238,6 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
     </div>
   </div>
 
-  <!-- Add/Edit Product Modal -->
   <div id="addProductModal" class="modal-overlay" onclick="closeModals(event)">
     <div class="modal" onclick="event.stopPropagation()">
       <div class="modal-header">
@@ -280,7 +271,6 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
     </div>
   </div>
 
-  <!-- Logo Modal -->
   <div id="logoModal" class="modal-overlay" onclick="closeModals(event)">
     <div class="modal" onclick="event.stopPropagation()">
       <div class="modal-header">
@@ -293,7 +283,6 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
     </div>
   </div>
 
-  <!-- Category Modal -->
   <div id="categoryModal" class="modal-overlay" onclick="closeModals(event)">
     <div class="modal" onclick="event.stopPropagation()">
       <div class="modal-header">
@@ -309,7 +298,6 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
 </div>
 
 <script>
-// 1. CONFIGURACIÓN FIREBASE
 const firebaseConfig = {
   apiKey: "AIzaSyBtkpwXWWJUDDab3RLuzxS7oAOmFv-LpG8",
   authDomain: "adrivargas-f9558.firebaseapp.com",
@@ -323,7 +311,6 @@ const db = firebase.firestore();
 const storage = firebase.storage();
 const auth = firebase.auth();
 
-// Variables Globales
 const whatsappNumber = "51999999999"; 
 const FALLBACK_IMG = 'data:image/svg+xml;utf8,' + encodeURIComponent(
   `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="#F5EDE4"/><text x="50%" y="50%" font-family="sans-serif" font-size="16" fill="#A89484" text-anchor="middle" dominant-baseline="middle">Sin imagen</text></svg>`
@@ -337,16 +324,13 @@ let currentCategory = 'all';
 let currentSearch = '';
 let activeAdminChatUser = null;
 
-// Autenticación
 auth.onAuthStateChanged(user => {
-  // Si nadie ha iniciado sesión todavía, autenticamos al cliente de forma anónima
-  // (esto le da un UID real y verificable por Firebase, en vez de uno inventado).
   if (!user) {
     auth.signInAnonymously().catch(err => {
       console.error('Error de autenticación:', err);
-      alert('No se pudo iniciar la app: ' + err.message + '\n\nRevisa que el proveedor "Anonymous" esté activado en Firebase → Authentication → Sign-in method.');
+      alert('No se pudo iniciar la app: ' + err.message + '\n\nRevisa que el proveedor "Anonymous" esté activado en Firebase.');
     });
-    return; // este mismo listener se volverá a disparar cuando el login anónimo termine
+    return;
   }
 
   isAdmin = !user.isAnonymous;
@@ -390,7 +374,6 @@ function togglePassword() {
   const isHidden = input.type === 'password';
   input.type = isHidden ? 'text' : 'password';
   btn.textContent = isHidden ? '🙈' : '👁️';
-  btn.title = isHidden ? 'Ocultar contraseña' : 'Mostrar contraseña';
 }
 
 function loginAdmin() {
@@ -398,11 +381,10 @@ function loginAdmin() {
   const pass = document.getElementById('adminPass').value;
   auth.signInWithEmailAndPassword(email, pass).then(() => {
     closeModals(); showToast('¡Bienvenida Administradora!');
-  }).catch(e => alert("Error: " + e.message));
+  }).catch(e => alert("Error de acceso: " + e.message));
 }
 function logoutAdmin() { auth.signOut(); closeModals(); showToast('Sesión cerrada'); }
 
-// 2. LOGO
 function loadLogo() {
   db.collection('config').doc('store').get().then(doc => {
     const logoImg = document.getElementById('headerLogoImg');
@@ -418,7 +400,6 @@ function loadLogo() {
   }).catch(() => {});
 }
 
-// Pinchar el logo solo abre el cambio de logo si eres administradora
 function handleLogoClick() {
   if(isAdmin) {
     openLogoModal();
@@ -444,7 +425,6 @@ function saveLogo() {
   }).catch(err => alert("Error al subir logo: " + err.message));
 }
 
-// 3. PRODUCTOS
 function loadProducts() {
   db.collection('products').orderBy('createdAt', 'desc').onSnapshot(snap => {
     allProducts = [];
@@ -453,12 +433,9 @@ function loadProducts() {
     renderProducts();
   }, err => {
     console.error('Error cargando productos:', err);
-    document.getElementById('productGrid').innerHTML =
-      `<div class="empty-state" style="grid-column:1/-1">No se pudo cargar el catálogo.<br><small>${escapeHtml(err.message)}</small></div>`;
   });
 }
 
-// 3b. CATEGORÍAS (creadas manualmente por la vendedora)
 function loadCategories() {
   db.collection('categories').orderBy('createdAt', 'asc').onSnapshot(snap => {
     categories = [];
@@ -470,7 +447,6 @@ function loadCategories() {
 
 function renderCategories() {
   const container = document.getElementById('categoryFilters');
-
   let html = `<button class="filter-chip ${currentCategory === 'all' ? 'active' : ''}" data-filter="all" onclick="setCategory('all')">Todo</button>`;
 
   if(isAdmin) {
@@ -491,11 +467,13 @@ function renderCategories() {
 }
 
 function openCategoryModal() {
+  if (!isAdmin) return alert("Debes iniciar sesión como administrador para crear categorías.");
   document.getElementById('newCatName').value = '';
   document.getElementById('categoryModal').classList.add('active');
 }
 
 function saveCategory() {
+  if (!isAdmin) return alert("Acción denegada. Debes iniciar sesión como admin.");
   const name = document.getElementById('newCatName').value.trim();
   if(!name) return alert('Escribe un nombre para la categoría');
 
@@ -507,13 +485,17 @@ function saveCategory() {
   }).then(() => {
     closeModals();
     showToast('¡Categoría creada!');
-  }).catch(err => alert('Error al crear categoría: ' + err.message));
+  }).catch(err => {
+    console.error(err);
+    alert('Error al crear categoría: ' + err.message + '\n\nRevisa tus reglas de Firestore para permitir escrituras en "categories".');
+  });
 }
 
 function deleteCategory(id, event) {
   if(event) event.stopPropagation();
-  if(confirm('¿Eliminar esta categoría? Los productos que ya la tengan asignada no se borrarán, pero deberás reasignarlos a otra categoría.')) {
-    db.collection('categories').doc(id).delete().then(() => showToast('Categoría eliminada'));
+  if(!isAdmin) return alert("Acción no permitida.");
+  if(confirm('¿Eliminar esta categoría?')) {
+    db.collection('categories').doc(id).delete().then(() => showToast('Categoría eliminada')).catch(err => alert(err.message));
   }
 }
 
@@ -523,7 +505,7 @@ function populateCategorySelect(selected) {
   const current = selected !== undefined ? selected : select.value;
 
   if(categories.length === 0) {
-    select.innerHTML = `<option value="">Crea una categoría primero (botón + )</option>`;
+    select.innerHTML = `<option value="">Crea una categoría primero (+)</option>`;
     return;
   }
 
@@ -545,11 +527,7 @@ function renderProducts() {
     const minStock = Number(p.minStock ?? 2);
     const isOut = stock <= 0;
 
-    let warningBadge = '';
-    if(isAdmin && !isOut && stock <= minStock) {
-      warningBadge = `<div class="stock-warning-badge">⚠️ Stock bajo (${stock} restantes)</div>`;
-    }
-
+    let warningBadge = (isAdmin && !isOut && stock <= minStock) ? `<div class="stock-warning-badge">⚠️ Stock bajo (${stock})</div>` : '';
     const outOverlay = isOut ? `<div class="out-of-stock-overlay">No disponible</div>` : '';
     const addBtn = isOut ? '' : `<button class="btn-sm" style="background:var(--text-primary); color:white;" onclick="addToCart('${p.id}')">Agregar</button>`;
 
@@ -570,23 +548,18 @@ function renderProducts() {
         <div class="product-details-text">Stock: ${stock}</div>
         ${warningBadge}
         <div class="product-price">$${p.price}</div>
-        <div class="product-actions">
-          ${addBtn}
-        </div>
+        <div class="product-actions">${addBtn}</div>
         ${adminControls}
       </div>
     </div>`;
   }).join('');
 }
 
-function setCategory(cat) {
-  currentCategory = cat;
-  renderCategories();
-  renderProducts();
-}
+function setCategory(cat) { currentCategory = cat; renderCategories(); renderProducts(); }
 function filterProducts() { currentSearch = document.getElementById('searchInput').value; renderProducts(); }
 
 function openAddModal() {
+  if (!isAdmin) return alert("Inicia sesión como administrador.");
   document.getElementById('modalProductTitle').textContent = 'Subir Prenda';
   document.getElementById('editProdId').value = '';
   document.getElementById('newProdName').value = '';
@@ -617,6 +590,7 @@ function openEditModal(id) {
 }
 
 function saveProduct() {
+  if (!isAdmin) return alert("No autorizado.");
   const editId = document.getElementById('editProdId').value;
   const name = document.getElementById('newProdName').value;
   const price = document.getElementById('newProdPrice').value;
@@ -635,58 +609,41 @@ function saveProduct() {
 
   const saveData = (imageUrl) => {
     const dataObj = {
-      name, 
-      price: Number(price), 
-      category: cat, 
-      size: size || 'Única', 
-      colors: colors || 'Único', 
-      stock: Number(stock || 10), 
-      minStock: Number(minStock || 3)
+      name, price: Number(price), category: cat, 
+      size: size || 'Única', colors: colors || 'Único', 
+      stock: Number(stock || 10), minStock: Number(minStock || 3)
     };
     if(imageUrl) dataObj.image = imageUrl;
 
-    let promise;
-    if(editId) {
-      promise = db.collection('products').doc(editId).update(dataObj);
-    } else {
-      dataObj.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-      promise = db.collection('products').add(dataObj);
-    }
+    let promise = editId ? db.collection('products').doc(editId).update(dataObj) : 
+      db.collection('products').add({...dataObj, createdAt: firebase.firestore.FieldValue.serverTimestamp()});
 
-    promise.then(() => {
-      showToast(editId ? '¡Producto actualizado!' : '¡Producto agregado con éxito!');
-    }).catch(err => alert("Error: " + err.message));
+    promise.then(() => showToast('¡Operación exitosa!')).catch(err => alert("Error: " + err.message));
   };
 
   if(file) {
-    const ref = storage.ref(`products/${Date.now()}_${file.name}`);
-    ref.put(file).then(snap => snap.ref.getDownloadURL()).then(url => {
-      saveData(url);
-    }).catch(err => alert("Error al subir imagen: " + err.message));
+    storage.ref(`products/${Date.now()}_${file.name}`).put(file)
+      .then(snap => snap.ref.getDownloadURL())
+      .then(url => saveData(url))
+      .catch(err => alert("Error al subir imagen: " + err.message));
   } else {
     saveData(null);
   }
 }
 
 function deleteProduct(id) {
+  if(!isAdmin) return;
   if(confirm("¿Seguro que deseas eliminar esta prenda?")) {
-    db.collection('products').doc(id).delete().then(() => {
-      showToast('Producto eliminado');
-    });
+    db.collection('products').doc(id).delete().then(() => showToast('Producto eliminado'));
   }
 }
 
-// 4. CARRITO Y PEDIDOS
 function addToCart(id) {
   const p = allProducts.find(x => x.id === id);
-  if(!p || (p.stock ?? 10) <= 0) return alert("Este producto ya no está disponible");
+  if(!p || (p.stock ?? 10) <= 0) return alert("Este producto no está disponible");
 
   const existing = cart.find(item => item.id === id);
-  const currentQtyInCart = existing ? existing.qty : 0;
-
-  if(currentQtyInCart + 1 > p.stock) {
-    return alert("No hay más stock disponible para este producto");
-  }
+  if(existing && existing.qty + 1 > p.stock) return alert("No hay más stock disponible");
 
   if(existing) existing.qty++; 
   else cart.push({id, qty:1, name: p.name, price: p.price, image: p.image});
@@ -697,6 +654,7 @@ function saveCart() { localStorage.setItem('tienda_cart', JSON.stringify(cart));
 function updateCartBadge() { 
   const count = cart.reduce((s,i) => s + i.qty, 0); 
   document.getElementById('cartBadge').style.display = count > 0 ? 'flex' : 'none';
+  document.getElementById('cartBadge മറ്റൊരു', count);
   document.getElementById('cartBadge').innerText = count;
 }
 
@@ -735,7 +693,7 @@ function changeQty(index, delta) {
   const stock = product ? Number(product.stock ?? 10) : Infinity;
   const newQty = item.qty + delta;
   if(newQty < 1) return removeCart(index);
-  if(newQty > stock) return showToast('No hay más stock disponible');
+  if(newQty > stock) return showToast('No hay más stock');
   item.qty = newQty;
   saveCart(); renderCart();
 }
@@ -760,8 +718,7 @@ function sendWhatsAppOrder() {
     const prodRef = db.collection('products').doc(item.id);
     const originalProd = allProducts.find(p => p.id === item.id);
     if(originalProd) {
-      const newStock = Math.max(0, (originalProd.stock || 10) - item.qty);
-      batch.update(prodRef, { stock: newStock });
+      batch.update(prodRef, { stock: Math.max(0, (originalProd.stock || 10) - item.qty) });
     }
   });
 
@@ -772,9 +729,7 @@ function sendWhatsAppOrder() {
   }).then(() => {
     cart = []; saveCart(); renderCart(); switchView('pedidos');
     window.open('https://wa.me/' + whatsappNumber + '?text=' + encodeURIComponent(text), '_blank');
-  }).catch(err => {
-    alert("Error al procesar el pedido: " + err.message);
-  });
+  }).catch(err => alert("Error al procesar el pedido: " + err.message));
 }
 
 function loadOrders() {
@@ -802,16 +757,11 @@ function loadOrders() {
           ${adminBtns}
         </div>`;
     });
-  }, err => {
-    console.error('Error cargando pedidos:', err);
-    document.getElementById('ordersList').innerHTML =
-      `<div class="empty-state">No se pudieron cargar los pedidos.<br><small>${escapeHtml(err.message)}</small></div>`;
-  });
+  }, () => {});
 }
 
-function changeStatus(id, status) { db.collection('orders').doc(id).update({status}); }
+function changeStatus(id, status) { if(isAdmin) db.collection('orders').doc(id).update({status}); }
 
-// 5. CHAT
 function loadClientChat() {
   db.collection('chats').doc(clientId).collection('messages').orderBy('timestamp', 'asc').onSnapshot(snap => {
     const box = document.getElementById('chatMessages');
@@ -821,7 +771,7 @@ function loadClientChat() {
       box.innerHTML += `<div class="chat-bubble ${msg.sender}">${escapeHtml(msg.text)}</div>`;
     });
     box.scrollTop = box.scrollHeight;
-  }, err => console.error('Error cargando chat:', err));
+  });
 }
 
 function loadAdminChats() {
@@ -831,7 +781,7 @@ function loadAdminChats() {
     snap.forEach(doc => {
       list.innerHTML += `<div class="chat-list-item" onclick="openAdminChat('${doc.id}')">Chat con Cliente: ${escapeHtml(doc.id.slice(0, 8))}</div>`;
     });
-  }, err => console.error('Error cargando lista de chats:', err));
+  });
 }
 
 function openAdminChat(id) {
@@ -863,25 +813,17 @@ function sendChat() {
 
   const targetId = isAdmin ? activeAdminChatUser : clientId;
   const senderType = isAdmin ? 'admin' : 'client';
-
   if(!targetId) return;
 
   db.collection('chats').doc(targetId).collection('messages').add({
     text, sender: senderType, timestamp: firebase.firestore.FieldValue.serverTimestamp()
   });
-  
   db.collection('chats').doc(targetId).set({ lastUpdated: firebase.firestore.FieldValue.serverTimestamp() }, {merge:true});
   input.value = '';
 }
 
-// Utils
 function escapeHtml(str) {
-  return String(str ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+  return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 function switchView(view) {
