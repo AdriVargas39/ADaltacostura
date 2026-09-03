@@ -52,7 +52,16 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
 .search-box { display:flex; align-items:center; gap:10px; padding:10px 14px; border:1px solid var(--border); border-radius:var(--radius-md); margin-bottom:12px; background:var(--surface-muted); }
 .search-box svg { color:var(--text-quaternary); flex-shrink:0; }
 .search-box input { border:none; background:transparent; outline:none; width:100%; font-size:14px; color:var(--text-primary); font-family:inherit; }
-.filters { display:flex; gap:8px; overflow-x:auto; padding-bottom:8px; margin-bottom:14px; scrollbar-width:none; }
+.filters {
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  align-items:center;
+  gap:8px;
+  width:100%;
+  padding:0 4px 8px;
+  margin-bottom:14px;
+}
 .filters::-webkit-scrollbar { display:none; }
 .filter-chip { padding:7px 16px; border:1px solid var(--border); border-radius:var(--radius-full); background:var(--surface); font-size:13px; cursor:pointer; white-space:nowrap; color:var(--text-secondary); font-weight:500; transition:all var(--transition); }
 .filter-chip.active { background:var(--text-primary); color:var(--surface); border-color:var(--text-primary); }
@@ -74,7 +83,25 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
 .product-actions { display:flex; gap:6px; margin-top:10px; }
 .btn-sm { flex:1; padding:7px 8px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--surface); font-size:12px; font-weight:500; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:4px; color:var(--text-secondary); transition:all var(--transition); }
 .btn-sm:hover { background:var(--surface-muted); }
-.out-of-stock-overlay { position:absolute; inset:0; background:rgba(255,255,255,0.85); display:flex; align-items:center; justify-content:center; font-weight:700; color:var(--danger); font-size:14px; text-align:center; padding:10px; z-index:2; }
+.out-of-stock-overlay {
+  position:absolute;
+  inset:0;
+  background:rgba(255,255,255,0.85);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:700;
+  color:var(--danger);
+  font-size:14px;
+  text-align:center;
+  padding:10px;
+  z-index:2;
+  pointer-events:none;
+}
+.product-card .product-info { position:relative; z-index:3; }
+.product-card .product-actions,
+.product-card .product-actions > *,
+.product-card .product-info > div[style] { position:relative; z-index:4; }
 .stock-warning-badge { background:#fef3c7; color:#d97706; font-size:10px; padding:2px 6px; border-radius:var(--radius-full); font-weight:600; display:inline-block; margin-bottom:4px; }
 
 /* ===== CART ===== */
@@ -133,6 +160,50 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
 .toast.show { opacity:1; }
 .chat-list-item { padding:12px; border-bottom:1px solid var(--border); cursor:pointer; font-weight:500; font-size:14px;}
 .chat-list-item:hover { background:var(--surface-muted); }
+
+/* Mejoras para una tienda administrada desde casa */
+.stock-quick-controls{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  flex-wrap:wrap;
+  margin-top:8px;
+}
+.stock-quick-controls button{
+  min-width:42px;
+  min-height:38px;
+  padding:7px 10px;
+  border-radius:9px;
+  cursor:pointer;
+  font-weight:700;
+}
+.stock-filter-bar{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  align-items:center;
+  gap:7px;
+  width:100%;
+  margin:0 auto 12px;
+}
+.stock-filter-btn{
+  border:1px solid #ddd;
+  background:#fff;
+  padding:8px 13px;
+  border-radius:999px;
+  cursor:pointer;
+  font-weight:600;
+}
+.stock-filter-btn.active{
+  box-shadow:0 0 0 2px rgba(0,0,0,.08);
+  transform:translateY(-1px);
+}
+.admin-product-controls{
+  position:relative;
+  z-index:5;
+}
+
 </style>
 </head>
 <body>
@@ -178,7 +249,15 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
           ➕ Subir Prenda Nueva
         </button>
       </div>
-      <div id="productGrid" class="product-grid">Cargando catálogo...</div>
+      
+<div class="stock-filter-bar" id="stockFilterBar">
+  <button type="button" class="stock-filter-btn active" data-stock-filter="all" onclick="setStockFilter('all')">Todos</button>
+  <button type="button" class="stock-filter-btn" data-stock-filter="available" onclick="setStockFilter('available')">Disponibles</button>
+  <button type="button" class="stock-filter-btn" data-stock-filter="low" onclick="setStockFilter('low')">Poco stock</button>
+  <button type="button" class="stock-filter-btn" data-stock-filter="out" onclick="setStockFilter('out')">Agotados</button>
+</div>
+
+<div id="productGrid" class="product-grid">Cargando catálogo...</div>
     </div>
 
     <div id="carrito" class="view">
@@ -514,6 +593,54 @@ function populateCategorySelect(selected) {
   select.value = current || '';
 }
 
+
+let currentStockFilter = 'all';
+
+function setStockFilter(filter){
+  currentStockFilter = filter;
+  document.querySelectorAll('.stock-filter-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.stockFilter === filter);
+  });
+  renderProducts();
+}
+
+async function quickAddStock(productId, amount){
+  if (!isAdmin) return;
+  const p = products.find(x => String(x.id) === String(productId));
+  if (!p) return;
+  const current = Number(p.stock ?? 0);
+  const newStock = Math.max(0, current + Number(amount || 0));
+  try{
+    await db.collection('products').doc(String(productId)).update({stock:newStock});
+    p.stock = newStock;
+    renderProducts();
+  }catch(err){
+    console.error(err);
+    alert('No se pudo actualizar el stock.');
+  }
+}
+
+async function quickSetStock(productId){
+  if (!isAdmin) return;
+  const p = products.find(x => String(x.id) === String(productId));
+  if (!p) return;
+  const value = prompt(`Cantidad de stock para "${p.name || 'producto'}":`, String(Number(p.stock ?? 0)));
+  if (value === null) return;
+  const n = Number(value);
+  if (!Number.isFinite(n) || n < 0 || !Number.isInteger(n)){
+    alert('Escribe una cantidad entera igual o mayor que 0.');
+    return;
+  }
+  try{
+    await db.collection('products').doc(String(productId)).update({stock:n});
+    p.stock = n;
+    renderProducts();
+  }catch(err){
+    console.error(err);
+    alert('No se pudo actualizar el stock.');
+  }
+}
+
 function renderProducts() {
   const grid = document.getElementById('productGrid');
   let filtered = allProducts.filter(p => {
@@ -528,13 +655,13 @@ function renderProducts() {
     const isOut = stock <= 0;
 
     let warningBadge = (isAdmin && !isOut && stock <= minStock) ? `<div class="stock-warning-badge">⚠️ Stock bajo (${stock})</div>` : '';
-    const outOverlay = isOut ? `<div class="out-of-stock-overlay">No disponible</div>` : '';
+    const outOverlay = isOut ? `<div class="out-of-stock-overlay">${isAdmin ? 'No disponible · Puedes editarla o borrarla' : 'No disponible'}</div>` : '';
     const addBtn = isOut ? '' : `<button class="btn-sm" style="background:var(--text-primary); color:white;" onclick="addToCart('${p.id}')">Agregar</button>`;
 
     const adminControls = isAdmin ? `
-      <div style="display:flex; gap:5px; margin-top:5px;">
-        <button class="btn-sm" style="background:var(--surface-muted);" onclick="openEditModal('${p.id}')">✏️ Editar</button>
-        <button class="btn-sm" style="background:#dc2626; color:#fff;" onclick="deleteProduct('${p.id}')">🗑️ Borrar</button>
+      <div class="admin-product-controls" style="display:flex; gap:5px; margin-top:5px; position:relative; z-index:5;">
+        <button type="button" class="btn-sm" style="background:var(--surface-muted);" onclick="event.stopPropagation(); openEditModal('${p.id}')">✏️ Editar</button>
+        <button type="button" class="btn-sm" style="background:#dc2626; color:#fff;" onclick="event.stopPropagation(); deleteProduct('${p.id}')">🗑️ Borrar</button>
       </div>
     ` : '';
     
@@ -602,6 +729,8 @@ function saveProduct() {
   const file = document.getElementById('newProdImg').files[0];
 
   if(!name || !price || !cat) return alert("Completa al menos el nombre, precio y categoría");
+  if(stock !== '' && Number(stock) < 0) return alert("El stock no puede ser negativo.");
+  if(minStock !== '' && Number(minStock) < 0) return alert("El stock mínimo no puede ser negativo.");
 
   closeModals();
   showToast(editId ? 'Actualizando producto...' : 'Guardando producto...');
@@ -610,7 +739,7 @@ function saveProduct() {
     const dataObj = {
       name, price: Number(price), category: cat, 
       size: size || 'Única', colors: colors || 'Único', 
-      stock: Number(stock || 10), minStock: Number(minStock || 3)
+      stock: Number(stock === '' ? 0 : stock), minStock: Number(minStock === '' ? 0 : minStock)
     };
     if(imageUrl) {
       dataObj.image = imageUrl;
@@ -848,3 +977,4 @@ updateCartBadge();
 </body>
 </html>
 </html>
+
