@@ -250,7 +250,7 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
         </button>
       </div>
       
-<div class="stock-filter-bar" id="stockFilterBar">
+<div class="stock-filter-bar" id="stockFilterBar" style="display:none;">
   <button type="button" class="stock-filter-btn active" data-stock-filter="all" onclick="setStockFilter('all')">Todos</button>
   <button type="button" class="stock-filter-btn" data-stock-filter="available" onclick="setStockFilter('available')">Disponibles</button>
   <button type="button" class="stock-filter-btn" data-stock-filter="low" onclick="setStockFilter('low')">Poco stock</button>
@@ -419,6 +419,8 @@ auth.onAuthStateChanged(user => {
   document.getElementById('headerLogoBtn').classList.toggle('admin', isAdmin);
   document.getElementById('adminControlsArea').style.display = isAdmin ? 'block' : 'none';
   document.getElementById('logoutBtn').style.display = isAdmin ? 'block' : 'none';
+  document.getElementById('stockFilterBar').style.display = isAdmin ? 'flex' : 'none';
+  if(!isAdmin) currentStockFilter = 'all';
   
   if(isAdmin) {
     document.getElementById('adminChatListView').style.display = 'block';
@@ -515,6 +517,14 @@ function loadProducts() {
   });
 }
 
+function slugify(str) {
+  return String(str ?? '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // quita acentos
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, ' '); // colapsa espacios múltiples
+}
+
 function loadCategories() {
   db.collection('categories').orderBy('createdAt', 'asc').onSnapshot(snap => {
     categories = [];
@@ -533,7 +543,7 @@ function renderCategories() {
   }
 
   categories.forEach(cat => {
-    const key = cat.name.toLowerCase().trim();
+    const key = slugify(cat.name);
     const isActive = currentCategory === key ? 'active' : '';
     html += `
       <span class="chip-wrap">
@@ -556,8 +566,8 @@ function saveCategory() {
   const name = document.getElementById('newCatName').value.trim();
   if(!name) return alert('Escribe un nombre para la categoría');
 
-  const exists = categories.some(c => c.name.toLowerCase().trim() === name.toLowerCase());
-  if(exists) return alert('Esa categoría ya existe');
+  const exists = categories.some(c => slugify(c.name) === slugify(name));
+  if(exists) return alert('Esa categoría ya existe (o es muy similar a una existente)');
 
   db.collection('categories').add({
     name, createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -643,10 +653,23 @@ async function quickSetStock(productId){
 
 function renderProducts() {
   const grid = document.getElementById('productGrid');
+  const stockFilter = isAdmin ? currentStockFilter : 'all';
+
   let filtered = allProducts.filter(p => {
-    const matchCat = currentCategory === 'all' || (p.category && p.category.toLowerCase().trim() === currentCategory);
+    const matchCat = currentCategory === 'all' || (p.category && slugify(p.category) === currentCategory);
     const matchSearch = p.name.toLowerCase().includes(currentSearch.toLowerCase());
-    return matchCat && matchSearch;
+
+    const stock = Number(p.stock ?? 10);
+    const minStock = Number(p.minStock ?? 2);
+    const isOut = stock <= 0;
+    const isLow = !isOut && stock <= minStock;
+
+    let matchStock = true;
+    if (stockFilter === 'available') matchStock = !isOut;
+    else if (stockFilter === 'low') matchStock = isLow;
+    else if (stockFilter === 'out') matchStock = isOut;
+
+    return matchCat && matchSearch && matchStock;
   });
 
   grid.innerHTML = filtered.map(p => {
@@ -657,6 +680,7 @@ function renderProducts() {
     let warningBadge = (isAdmin && !isOut && stock <= minStock) ? `<div class="stock-warning-badge">⚠️ Stock bajo (${stock})</div>` : '';
     const outOverlay = isOut ? `<div class="out-of-stock-overlay">${isAdmin ? 'No disponible · Puedes editarla o borrarla' : 'No disponible'}</div>` : '';
     const addBtn = isOut ? '' : `<button class="btn-sm" style="background:var(--text-primary); color:white;" onclick="addToCart('${p.id}')">Agregar</button>`;
+    const stockText = isAdmin ? `<div class="product-details-text">Stock: ${stock}</div>` : '';
 
     const adminControls = isAdmin ? `
       <div class="admin-product-controls" style="display:flex; gap:5px; margin-top:5px; position:relative; z-index:5;">
@@ -672,7 +696,7 @@ function renderProducts() {
       <div class="product-info">
         <div class="product-name">${escapeHtml(p.name)}</div>
         <div class="product-details-text">Talla: ${escapeHtml(p.size || 'Única')} | Color: ${escapeHtml(p.colors || 'Varios')}</div>
-        <div class="product-details-text">Stock: ${stock}</div>
+        ${stockText}
         ${warningBadge}
         <div class="product-price">$${p.price}</div>
         <div class="product-actions">${addBtn}</div>
@@ -872,10 +896,16 @@ function loadOrders() {
     
     snap.forEach(doc => {
       const o = doc.data();
+      const isDelivered = o.status === 'Entregado';
       const adminBtns = isAdmin ? `
         <div class="order-actions">
-          <button class="btn-sm" onclick="changeStatus('${doc.id}', 'Enviado')">📦 Enviar</button>
-          <button class="btn-sm" onclick="changeStatus('${doc.id}', 'Entregado')">✅ Entregar</button>
+          ${isDelivered ? `
+            <button class="btn-sm" disabled style="opacity:0.55; cursor:not-allowed;">✅ Editado</button>
+            <button class="btn-sm" onclick="reopenOrder('${doc.id}')" title="Volver a estado Enviado">↩️ Reabrir</button>
+          ` : `
+            <button class="btn-sm" onclick="changeStatus('${doc.id}', 'Enviado')">📦 Enviar</button>
+            <button class="btn-sm" onclick="changeStatus('${doc.id}', 'Entregado')">✅ Entregar</button>
+          `}
         </div>` : '';
 
       list.innerHTML += `
@@ -893,6 +923,12 @@ function loadOrders() {
 }
 
 function changeStatus(id, status) { if(isAdmin) db.collection('orders').doc(id).update({status}); }
+
+function reopenOrder(id) {
+  if(!isAdmin) return;
+  if(!confirm('¿Reabrir este pedido? Volverá al estado "Enviado" y podrás editarlo de nuevo.')) return;
+  db.collection('orders').doc(id).update({status:'Enviado'});
+}
 
 function loadClientChat() {
   db.collection('chats').doc(clientId).collection('messages').orderBy('timestamp', 'asc').onSnapshot(snap => {
@@ -977,4 +1013,3 @@ updateCartBadge();
 </body>
 </html>
 </html>
-
