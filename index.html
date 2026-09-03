@@ -57,6 +57,10 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
 .filters::-webkit-scrollbar { display:none; }
 .filter-chip { padding:7px 16px; border:1px solid var(--border); border-radius:var(--radius-full); background:var(--surface); font-size:13px; cursor:pointer; white-space:nowrap; color:var(--text-secondary); font-weight:500; transition:all var(--transition); }
 .filter-chip.active { background:var(--text-primary); color:var(--surface); border-color:var(--text-primary); }
+.filter-chip-add { width:32px; height:32px; flex-shrink:0; border:1px dashed var(--text-quaternary); border-radius:var(--radius-full); background:var(--surface); font-size:16px; font-weight:600; cursor:pointer; color:var(--text-secondary); display:flex; align-items:center; justify-content:center; transition:all var(--transition); }
+.filter-chip-add:hover { background:var(--surface-muted); border-color:var(--accent); color:var(--accent); }
+.chip-wrap { display:flex; align-items:center; gap:2px; flex-shrink:0; }
+.chip-delete-btn { width:20px; height:20px; border:none; border-radius:50%; background:var(--surface-muted); color:var(--danger); font-size:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 
 /* ===== PRODUCT GRID ===== */
 .product-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
@@ -131,7 +135,6 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
 .chat-list-item { padding:12px; border-bottom:1px solid var(--border); cursor:pointer; font-weight:500; font-size:14px;}
 .chat-list-item:hover { background:var(--surface-muted); }
 </style>
-<base target="_blank">
 </head>
 <body>
 
@@ -253,7 +256,12 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
       <input type="hidden" id="editProdId">
       <input type="text" id="newProdName" class="form-input" placeholder="Nombre de la prenda">
       <input type="number" id="newProdPrice" class="form-input" placeholder="Precio ($)">
-      <input type="text" id="newProdCat" class="form-input" placeholder="Categoría (ej: Vestidos, Zapatos)">
+      <div style="display:flex; gap:8px; align-items:flex-start;">
+        <select id="newProdCat" class="form-input" style="flex:1;">
+          <option value="">Selecciona una categoría</option>
+        </select>
+        <button type="button" class="btn-sm" style="flex:0 0 auto; height:44px; margin-bottom:12px; white-space:nowrap;" onclick="openCategoryModal()">+ Categoría</button>
+      </div>
       <input type="text" id="newProdSize" class="form-input" placeholder="Talla(s) (ej: S, M, L o Única)">
       <input type="text" id="newProdColors" class="form-input" placeholder="Color(es) (ej: Rojo, Negro, Azul)">
       <div style="display:flex; gap:10px;">
@@ -285,6 +293,18 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
     </div>
   </div>
 
+  <!-- Category Modal -->
+  <div id="categoryModal" class="modal-overlay" onclick="closeModals(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <span class="modal-title">Nueva Categoría</span>
+        <button class="modal-close" onclick="closeModals()">✕</button>
+      </div>
+      <input type="text" id="newCatName" class="form-input" placeholder="Nombre de la categoría (ej: Vestidos)">
+      <button class="btn-full" onclick="saveCategory()">Guardar Categoría</button>
+    </div>
+  </div>
+
   <div id="toast" class="toast"></div>
 </div>
 
@@ -311,6 +331,7 @@ const FALLBACK_IMG = 'data:image/svg+xml;utf8,' + encodeURIComponent(
 let clientId = null;
 let cart = JSON.parse(localStorage.getItem('tienda_cart') || '[]');
 let allProducts = [];
+let categories = [];
 let isAdmin = false;
 let currentCategory = 'all';
 let currentSearch = '';
@@ -347,6 +368,7 @@ auth.onAuthStateChanged(user => {
   }
   
   loadLogo();
+  loadCategories();
   loadProducts();
   loadOrders();
 });
@@ -436,19 +458,78 @@ function loadProducts() {
   });
 }
 
+// 3b. CATEGORÍAS (creadas manualmente por la vendedora)
+function loadCategories() {
+  db.collection('categories').orderBy('createdAt', 'asc').onSnapshot(snap => {
+    categories = [];
+    snap.forEach(doc => categories.push({ id: doc.id, ...doc.data() }));
+    renderCategories();
+    populateCategorySelect();
+  }, err => console.error('Error cargando categorías:', err));
+}
+
 function renderCategories() {
   const container = document.getElementById('categoryFilters');
-  const categories = [...new Set(allProducts.map(p => p.category ? p.category.toLowerCase().trim() : ''))].filter(Boolean);
-  
+
   let html = `<button class="filter-chip ${currentCategory === 'all' ? 'active' : ''}" data-filter="all" onclick="setCategory('all')">Todo</button>`;
-  
+
+  if(isAdmin) {
+    html += `<button class="filter-chip-add" onclick="openCategoryModal()" title="Agregar categoría">+</button>`;
+  }
+
   categories.forEach(cat => {
-    const formattedCat = cat.charAt(0).toUpperCase() + cat.slice(1);
-    const isActive = currentCategory === cat ? 'active' : '';
-    html += `<button class="filter-chip ${isActive}" data-filter="${cat}" onclick="setCategory('${cat}')">${formattedCat}</button>`;
+    const key = cat.name.toLowerCase().trim();
+    const isActive = currentCategory === key ? 'active' : '';
+    html += `
+      <span class="chip-wrap">
+        <button class="filter-chip ${isActive}" data-filter="${key}" onclick="setCategory('${key}')">${escapeHtml(cat.name)}</button>
+        ${isAdmin ? `<button class="chip-delete-btn" onclick="deleteCategory('${cat.id}', event)" title="Eliminar categoría">✕</button>` : ''}
+      </span>`;
   });
-  
+
   container.innerHTML = html;
+}
+
+function openCategoryModal() {
+  document.getElementById('newCatName').value = '';
+  document.getElementById('categoryModal').classList.add('active');
+}
+
+function saveCategory() {
+  const name = document.getElementById('newCatName').value.trim();
+  if(!name) return alert('Escribe un nombre para la categoría');
+
+  const exists = categories.some(c => c.name.toLowerCase().trim() === name.toLowerCase());
+  if(exists) return alert('Esa categoría ya existe');
+
+  db.collection('categories').add({
+    name, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    closeModals();
+    showToast('¡Categoría creada!');
+  }).catch(err => alert('Error al crear categoría: ' + err.message));
+}
+
+function deleteCategory(id, event) {
+  if(event) event.stopPropagation();
+  if(confirm('¿Eliminar esta categoría? Los productos que ya la tengan asignada no se borrarán, pero deberás reasignarlos a otra categoría.')) {
+    db.collection('categories').doc(id).delete().then(() => showToast('Categoría eliminada'));
+  }
+}
+
+function populateCategorySelect(selected) {
+  const select = document.getElementById('newProdCat');
+  if(!select) return;
+  const current = selected !== undefined ? selected : select.value;
+
+  if(categories.length === 0) {
+    select.innerHTML = `<option value="">Crea una categoría primero (botón + )</option>`;
+    return;
+  }
+
+  select.innerHTML = `<option value="">Selecciona una categoría</option>` +
+    categories.map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('');
+  select.value = current || '';
 }
 
 function renderProducts() {
@@ -510,7 +591,7 @@ function openAddModal() {
   document.getElementById('editProdId').value = '';
   document.getElementById('newProdName').value = '';
   document.getElementById('newProdPrice').value = '';
-  document.getElementById('newProdCat').value = '';
+  populateCategorySelect('');
   document.getElementById('newProdSize').value = '';
   document.getElementById('newProdColors').value = '';
   document.getElementById('newProdStock').value = '10';
@@ -526,7 +607,7 @@ function openEditModal(id) {
   document.getElementById('editProdId').value = p.id;
   document.getElementById('newProdName').value = p.name || '';
   document.getElementById('newProdPrice').value = p.price || '';
-  document.getElementById('newProdCat').value = p.category || '';
+  populateCategorySelect(p.category || '');
   document.getElementById('newProdSize').value = p.size || '';
   document.getElementById('newProdColors').value = p.colors || '';
   document.getElementById('newProdStock').value = p.stock ?? 10;
