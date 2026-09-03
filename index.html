@@ -615,7 +615,7 @@ function saveProduct() {
     if(imageUrl) {
       dataObj.image = imageUrl;
     } else if (!editId) {
-      dataObj.image = FALLBACK_IMG; // Imagen por defecto si se crea sin foto
+      dataObj.image = FALLBACK_IMG;
     }
 
     let promise = editId ? db.collection('products').doc(editId).update(dataObj) : 
@@ -846,4 +846,5 @@ renderCart();
 updateCartBadge();
 </script>
 </body>
+</html>
 </html>
