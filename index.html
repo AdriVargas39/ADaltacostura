@@ -281,8 +281,7 @@ const auth = firebase.auth();
 
 // Variables Globales
 const whatsappNumber = "51999999999"; 
-let clientId = localStorage.getItem('ad_client_id') || 'cliente_' + Date.now();
-localStorage.setItem('ad_client_id', clientId);
+let clientId = null;
 let cart = JSON.parse(localStorage.getItem('tienda_cart') || '[]');
 let allProducts = [];
 let isAdmin = false;
@@ -292,7 +291,16 @@ let activeAdminChatUser = null;
 
 // Autenticación
 auth.onAuthStateChanged(user => {
-  isAdmin = !!user;
+  // Si nadie ha iniciado sesión todavía, autenticamos al cliente de forma anónima
+  // (esto le da un UID real y verificable por Firebase, en vez de uno inventado).
+  if (!user) {
+    auth.signInAnonymously().catch(err => console.error('Error de autenticación:', err));
+    return; // este mismo listener se volverá a disparar cuando el login anónimo termine
+  }
+
+  isAdmin = !user.isAnonymous;
+  clientId = user.uid;
+
   document.getElementById('adminLabel').textContent = isAdmin ? 'Modo vendedora (Activo)' : 'Modo cliente';
   document.getElementById('adminControlsArea').style.display = isAdmin ? 'block' : 'none';
   document.getElementById('logoutBtn').style.display = isAdmin ? 'block' : 'none';
