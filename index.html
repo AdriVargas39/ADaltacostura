@@ -112,6 +112,12 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
 .chat-input { flex:1; padding:10px 14px; border:1px solid var(--border); border-radius:var(--radius-md); background:var(--surface-muted); outline:none; font-size:14px; }
 .chat-send { width:40px; height:40px; border:none; border-radius:var(--radius-md); background:var(--text-primary); color:var(--surface); cursor:pointer; display:flex; align-items:center; justify-content:center; }
 
+/* ===== PASSWORD TOGGLE ===== */
+.password-wrap { position:relative; margin-bottom:12px; }
+.password-wrap .form-input { margin-bottom:0; padding-right:44px; }
+.password-toggle { position:absolute; right:6px; top:50%; transform:translateY(-50%); width:32px; height:32px; border:none; background:transparent; cursor:pointer; font-size:17px; display:flex; align-items:center; justify-content:center; color:var(--text-tertiary); border-radius:var(--radius-sm); }
+.password-toggle:hover { background:var(--surface-muted); }
+
 /* ===== MODAL & FORMS ===== */
 .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); display:none; align-items:flex-end; justify-content:center; z-index:100; }
 .modal-overlay.active { display:flex; }
@@ -136,7 +142,6 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
       <img id="headerLogoImg" src="" alt="Logo" style="display:none;">
       <svg id="headerLogoSvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
     </button>
-    <span class="header-title">Tienda de Ropa</span>
   </div>
 
   <!-- TAB BAR -->
@@ -229,7 +234,10 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
         <button class="modal-close" onclick="closeModals()">✕</button>
       </div>
       <input type="email" id="adminEmail" class="form-input" placeholder="Correo">
-      <input type="password" id="adminPass" class="form-input" placeholder="Contraseña">
+      <div class="password-wrap">
+        <input type="password" id="adminPass" class="form-input" placeholder="Contraseña">
+        <button type="button" class="password-toggle" id="passToggleBtn" onclick="togglePassword()" title="Mostrar contraseña">👁️</button>
+      </div>
       <button class="btn-full" onclick="loginAdmin()">Ingresar</button>
       <button class="btn-full" style="background:#dc2626; margin-top:10px; display:none;" id="logoutBtn" onclick="logoutAdmin()">Cerrar Sesión</button>
     </div>
@@ -352,6 +360,15 @@ function closeModals(e) {
   if(!e || e.target.classList.contains('modal-overlay') || e.target.classList.contains('modal-close')) {
     document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active')); 
   }
+}
+
+function togglePassword() {
+  const input = document.getElementById('adminPass');
+  const btn = document.getElementById('passToggleBtn');
+  const isHidden = input.type === 'password';
+  input.type = isHidden ? 'text' : 'password';
+  btn.textContent = isHidden ? '🙈' : '👁️';
+  btn.title = isHidden ? 'Ocultar contraseña' : 'Mostrar contraseña';
 }
 
 function loginAdmin() {
