@@ -133,14 +133,8 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
 .order-actions { display:flex; gap:6px; margin-top:10px; flex-wrap:wrap; }
 
 /* ===== CHAT ===== */
-.chat-container { display:flex; flex-direction:column; height:calc(100vh - 200px); min-height:320px; border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden; background:var(--surface); }
-.chat-messages { flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:10px; }
-.chat-bubble { max-width:82%; padding:10px 14px; border-radius:16px; font-size:13.5px; line-height:1.45; word-wrap:break-word; }
-.chat-bubble.client { align-self:flex-end; background:var(--text-primary); color:var(--surface); border-bottom-right-radius:4px; }
-.chat-bubble.admin { align-self:flex-start; background:var(--surface-muted); color:var(--text-primary); border-bottom-left-radius:4px; border:1px solid var(--border); }
-.chat-input-area { display:flex; gap:8px; padding:10px 12px; border-top:1px solid var(--border); background:var(--surface); }
-.chat-input { flex:1; padding:10px 14px; border:1px solid var(--border); border-radius:var(--radius-md); background:var(--surface-muted); outline:none; font-size:14px; }
-.chat-send { width:40px; height:40px; border:none; border-radius:var(--radius-md); background:var(--text-primary); color:var(--surface); cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.whatsapp-chat-card { padding:6px 4px; }
+.whatsapp-chat-intro { font-size:13.5px; color:var(--text-secondary); line-height:1.5; margin-bottom:16px; }
 
 /* ===== PASSWORD TOGGLE ===== */
 .password-wrap { position:relative; margin-bottom:12px; }
@@ -158,8 +152,6 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
 .btn-full { width:100%; padding:14px; border:none; border-radius:var(--radius-md); background:var(--text-primary); color:var(--surface); font-size:15px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
 .toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:var(--text-primary); color:var(--surface); padding:10px 20px; border-radius:var(--radius-md); font-size:13px; opacity:0; pointer-events:none; transition:opacity 0.3s; z-index:200; }
 .toast.show { opacity:1; }
-.chat-list-item { padding:12px; border-bottom:1px solid var(--border); cursor:pointer; font-weight:500; font-size:14px;}
-.chat-list-item:hover { background:var(--surface-muted); }
 
 /* Mejoras para una tienda administrada desde casa */
 .stock-quick-controls{
@@ -286,16 +278,13 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
     </div>
 
     <div id="chat" class="view">
-      <div id="adminChatListView" style="display:none;">
-        <h3 style="margin-bottom:10px;">Chats de Clientes</h3>
-        <div id="adminChatList"></div>
-      </div>
-      <div class="chat-container" id="chatRoomView">
-        <div id="chatMessages" class="chat-messages"></div>
-        <div class="chat-input-area">
-          <input type="text" id="chatInput" class="chat-input" placeholder="Escribe un mensaje...">
-          <button class="chat-send" onclick="sendChat()">➤</button>
-        </div>
+      <div class="whatsapp-chat-card">
+        <p class="whatsapp-chat-intro">¿Tienes una pregunta sobre una prenda, un pedido o algo más? Escríbenos y te contactamos por WhatsApp.</p>
+        <input type="text" id="chatName" class="form-input" placeholder="Tu nombre completo">
+        <textarea id="chatMessage" class="form-input" rows="4" placeholder="Escribe tu mensaje..." style="resize:vertical; font-family:inherit;"></textarea>
+        <button class="whatsapp-btn" onclick="sendWhatsAppMessage()">
+          💬 Enviar por WhatsApp
+        </button>
       </div>
     </div>
   </div>
@@ -391,6 +380,10 @@ const storage = firebase.storage();
 const auth = firebase.auth();
 
 const whatsappNumber = "573138127403"; 
+
+function openWhatsApp(text) {
+  window.open('https://wa.me/' + whatsappNumber + '?text=' + encodeURIComponent(text), '_blank');
+}
 const FALLBACK_IMG = 'data:image/svg+xml;utf8,' + encodeURIComponent(
   `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="#F5EDE4"/><text x="50%" y="50%" font-family="sans-serif" font-size="16" fill="#A89484" text-anchor="middle" dominant-baseline="middle">Sin imagen</text></svg>`
 );
@@ -401,7 +394,6 @@ let categories = [];
 let isAdmin = false;
 let currentCategory = 'all';
 let currentSearch = '';
-let activeAdminChatUser = null;
 
 auth.onAuthStateChanged(user => {
   if (!user) {
@@ -421,17 +413,7 @@ auth.onAuthStateChanged(user => {
   document.getElementById('logoutBtn').style.display = isAdmin ? 'block' : 'none';
   document.getElementById('stockFilterBar').style.display = isAdmin ? 'flex' : 'none';
   if(!isAdmin) currentStockFilter = 'all';
-  
-  if(isAdmin) {
-    document.getElementById('adminChatListView').style.display = 'block';
-    document.getElementById('chatRoomView').style.display = 'none';
-    loadAdminChats();
-  } else {
-    document.getElementById('adminChatListView').style.display = 'none';
-    document.getElementById('chatRoomView').style.display = 'flex';
-    loadClientChat();
-  }
-  
+
   loadLogo();
   loadCategories();
   loadProducts();
@@ -884,7 +866,7 @@ function sendWhatsAppOrder() {
     });
   }).then(() => {
     cart = []; saveCart(); renderCart(); switchView('pedidos');
-    window.open('https://wa.me/' + whatsappNumber + '?text=' + encodeURIComponent(text), '_blank');
+    openWhatsApp(text);
   }).catch(err => alert("Error al procesar el pedido: " + err.message));
 }
 
@@ -930,64 +912,17 @@ function reopenOrder(id) {
   db.collection('orders').doc(id).update({status:'Enviado'});
 }
 
-function loadClientChat() {
-  db.collection('chats').doc(clientId).collection('messages').orderBy('timestamp', 'asc').onSnapshot(snap => {
-    const box = document.getElementById('chatMessages');
-    box.innerHTML = '';
-    snap.forEach(doc => {
-      const msg = doc.data();
-      box.innerHTML += `<div class="chat-bubble ${msg.sender}">${escapeHtml(msg.text)}</div>`;
-    });
-    box.scrollTop = box.scrollHeight;
-  });
-}
+function sendWhatsAppMessage() {
+  const name = document.getElementById('chatName').value.trim();
+  const message = document.getElementById('chatMessage').value.trim();
 
-function loadAdminChats() {
-  db.collection('chats').orderBy('lastUpdated', 'desc').onSnapshot(snap => {
-    const list = document.getElementById('adminChatList');
-    list.innerHTML = '';
-    snap.forEach(doc => {
-      list.innerHTML += `<div class="chat-list-item" onclick="openAdminChat('${doc.id}')">Chat con Cliente: ${escapeHtml(doc.id.slice(0, 8))}</div>`;
-    });
-  });
-}
+  if(!message) return alert('Escribe tu mensaje antes de enviarlo.');
 
-function openAdminChat(id) {
-  activeAdminChatUser = id;
-  document.getElementById('adminChatListView').style.display = 'none';
-  document.getElementById('chatRoomView').style.display = 'flex';
-  
-  db.collection('chats').doc(id).collection('messages').orderBy('timestamp', 'asc').onSnapshot(snap => {
-    const box = document.getElementById('chatMessages');
-    box.innerHTML = `<button class="btn-sm" style="margin-bottom:10px" onclick="backToChatList()">🔙 Volver a la lista</button>`;
-    snap.forEach(doc => {
-      const msg = doc.data();
-      box.innerHTML += `<div class="chat-bubble ${msg.sender === 'admin' ? 'client' : 'admin'}">${escapeHtml(msg.text)}</div>`;
-    });
-    box.scrollTop = box.scrollHeight;
-  });
-}
+  const text = `Hola, soy ${name || 'un cliente de la tienda'}.\n\n${message}`;
+  openWhatsApp(text);
 
-function backToChatList() {
-  activeAdminChatUser = null;
-  document.getElementById('adminChatListView').style.display = 'block';
-  document.getElementById('chatRoomView').style.display = 'none';
-}
-
-function sendChat() {
-  const input = document.getElementById('chatInput');
-  const text = input.value.trim();
-  if(!text) return;
-
-  const targetId = isAdmin ? activeAdminChatUser : clientId;
-  const senderType = isAdmin ? 'admin' : 'client';
-  if(!targetId) return;
-
-  db.collection('chats').doc(targetId).collection('messages').add({
-    text, sender: senderType, timestamp: firebase.firestore.FieldValue.serverTimestamp()
-  });
-  db.collection('chats').doc(targetId).set({ lastUpdated: firebase.firestore.FieldValue.serverTimestamp() }, {merge:true});
-  input.value = '';
+  document.getElementById('chatMessage').value = '';
+  showToast('¡Listo! Te contactaremos pronto por WhatsApp.');
 }
 
 function escapeHtml(str) {
