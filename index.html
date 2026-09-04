@@ -27,13 +27,15 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
 
 /* ===== APP HEADER (LOGO) ===== */
 .app-header { display:flex; align-items:center; gap:10px; padding:10px 14px; background:var(--surface); border-bottom:1px solid var(--border); flex-shrink:0; position:sticky; top:0; z-index:60; }
-.header-logo-btn { width:46px; height:46px; border-radius:50%; border:1px solid var(--border); background:var(--surface-muted); display:flex; align-items:center; justify-content:center; cursor:default; position:relative; padding:0; flex-shrink:0; transition:transform 0.2s ease-in-out; }
-.header-logo-btn img { width:100%; height:100%; object-fit:cover; border-radius:50%; display:block; image-rendering:-webkit-optimize-contrast; image-rendering:crisp-edges; }
-.header-logo-btn:hover { transform:scale(1.15); }
+.header-logo-btn { width:42px; height:42px; border-radius:50%; border:1px solid var(--border); background:var(--surface-muted); display:flex; align-items:center; justify-content:center; cursor:default; position:relative; padding:0; flex-shrink:0; transition:transform var(--transition); }
+.header-logo-btn img { width:100%; height:100%; object-fit:cover; border-radius:50%; display:block; }
 .header-logo-btn svg { width:22px; height:22px; color:var(--text-tertiary); }
 .header-logo-btn.admin { cursor:pointer; border-color:var(--text-quaternary); }
+.header-logo-btn.admin:hover { transform:scale(1.05); }
 .header-logo-btn.admin::after { content:'✎'; position:absolute; bottom:-2px; right:-2px; width:16px; height:16px; background:var(--text-primary); color:var(--surface); border-radius:50%; font-size:9px; display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow-sm); }
 .header-title { font-size:15px; font-weight:600; }
+.lang-btn { border:1px solid var(--border); background:var(--surface); border-radius:var(--radius-sm); width:30px; height:30px; font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; opacity:0.5; transition:all var(--transition); }
+.lang-btn.active { opacity:1; border-color:var(--accent); box-shadow:0 0 0 1.5px var(--accent); }
 
 /* ===== TAB BAR ===== */
 .tab-bar { display:flex; gap:2px; padding:6px 8px 8px; border-bottom:1px solid var(--border); background:var(--surface); position:sticky; top:0; z-index:50; flex-shrink:0; }
@@ -228,28 +230,33 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
 
 <div id="app">
   <div class="app-header">
-    <button id="headerLogoBtn" class="header-logo-btn" onclick="handleLogoClick()" title="Logo de la tienda">
+    <button id="headerLogoBtn" class="header-logo-btn" onclick="handleLogoClick()" title="Logo de la tienda" data-i18n-title="logo_tooltip">
       <img id="headerLogoImg" src="" alt="Logo" style="display:none;">
       <svg id="headerLogoSvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
     </button>
+    <div id="langSwitcher" style="display:flex; gap:4px; margin-left:auto;">
+      <button type="button" class="lang-btn" data-lang="es" onclick="setLanguage('es')" title="Español">🇪🇸</button>
+      <button type="button" class="lang-btn" data-lang="en" onclick="setLanguage('en')" title="English">🇺🇸</button>
+      <button type="button" class="lang-btn" data-lang="fr" onclick="setLanguage('fr')" title="Français">🇫🇷</button>
+    </div>
   </div>
 
   <div class="tab-bar">
     <button class="tab-btn active" data-view="catalogo" onclick="switchView('catalogo')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-      <span>Catálogo</span>
+      <span data-i18n="tab_catalogo">Catálogo</span>
     </button>
     <button class="tab-btn" data-view="carrito" onclick="switchView('carrito')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-      <span style="position:relative">Carrito<span id="cartBadge" class="badge" style="display:none">0</span></span>
+      <span style="position:relative"><span data-i18n="tab_carrito">Carrito</span><span id="cartBadge" class="badge" style="display:none">0</span></span>
     </button>
     <button class="tab-btn" data-view="pedidos" onclick="switchView('pedidos')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/></svg>
-      <span>Pedidos</span>
+      <span data-i18n="tab_pedidos">Pedidos</span>
     </button>
     <button class="tab-btn" data-view="chat" onclick="switchView('chat')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
-      <span>Chat</span>
+      <span data-i18n="tab_chat">Chat</span>
     </button>
   </div>
 
@@ -257,58 +264,59 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
     <div id="catalogo" class="view active">
       <div class="search-box">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" id="searchInput" placeholder="Buscar" oninput="filterProducts()">
+        <input type="text" id="searchInput" placeholder="Buscar" data-i18n-placeholder="search_placeholder" oninput="filterProducts()">
       </div>
       <div class="filters" id="categoryFilters">
-        <button class="filter-chip active" data-filter="all" onclick="setCategory('all')">Todo</button>
+        <button class="filter-chip active" data-filter="all" onclick="setCategory('all')" data-i18n="filter_all">Todo</button>
       </div>
       <div id="adminControlsArea" style="display:none; margin-bottom:15px;">
-        <button class="whatsapp-btn" style="background:var(--text-primary); margin-top:0; margin-bottom:8px;" onclick="openAddModal()">
+        <button class="whatsapp-btn" style="background:var(--text-primary); margin-top:0; margin-bottom:8px;" onclick="openAddModal()" data-i18n="admin_upload_btn">
           ➕ Subir Prenda Nueva
         </button>
       </div>
       
       <div class="stock-filter-bar" id="stockFilterBar" style="display:none;">
-        <button type="button" class="stock-filter-btn active" data-stock-filter="all" onclick="setStockFilter('all')">Todos</button>
-        <button type="button" class="stock-filter-btn" data-stock-filter="available" onclick="setStockFilter('available')">Disponibles</button>
-        <button type="button" class="stock-filter-btn" data-stock-filter="low" onclick="setStockFilter('low')">Poco stock</button>
-        <button type="button" class="stock-filter-btn" data-stock-filter="out" onclick="setStockFilter('out')">Agotados</button>
+        <button type="button" class="stock-filter-btn active" data-stock-filter="all" onclick="setStockFilter('all')" data-i18n="stock_all">Todos</button>
+        <button type="button" class="stock-filter-btn" data-stock-filter="available" onclick="setStockFilter('available')" data-i18n="stock_available">Disponibles</button>
+        <button type="button" class="stock-filter-btn" data-stock-filter="low" onclick="setStockFilter('low')" data-i18n="stock_low">Poco stock</button>
+        <button type="button" class="stock-filter-btn" data-stock-filter="out" onclick="setStockFilter('out')" data-i18n="stock_out">Agotados</button>
       </div>
 
-      <div id="productGrid" class="product-grid">Cargando catálogo...</div>
+      <div id="productGrid" class="product-grid" data-i18n="loading_catalog">Cargando catálogo...</div>
     </div>
 
     <div id="carrito" class="view">
       <div id="cartItems"></div>
       <div id="cartEmpty" class="empty-state">
-        <p>Tu carrito está vacío</p>
+        <p data-i18n="cart_empty">Tu carrito está vacío</p>
       </div>
       <div id="cartSummary" style="display:none">
-        <input type="text" id="orderName" class="form-input" placeholder="Tu nombre completo">
-        <input type="tel" id="orderPhone" class="form-input" placeholder="Tu número de celular">
+        <input type="text" id="orderName" class="form-input" placeholder="Tu nombre completo" data-i18n-placeholder="order_name_placeholder">
+        <input type="tel" id="orderPhone" class="form-input" placeholder="Tu número de celular" data-i18n-placeholder="order_phone_placeholder">
         <div class="total-bar">
-          <span class="total-label">Total a pagar</span>
+          <span class="total-label" data-i18n="total_label">Total a pagar</span>
           <span class="total-value" id="cartTotal">$0</span>
         </div>
-        <button class="whatsapp-btn" onclick="sendWhatsAppOrder()">Pedir por WhatsApp</button>
+        <button class="whatsapp-btn" onclick="sendWhatsAppOrder()" data-i18n="order_whatsapp_btn">Pedir por WhatsApp</button>
       </div>
     </div>
 
     <div id="pedidos" class="view">
       <div class="admin-toggle" onclick="openLoginModal()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span id="adminLabel">Modo cliente</span>
-        <span style="margin-left:auto;font-size:11px;color:var(--text-quaternary)">Acceso admin 🔒</span>
+        <span id="adminLabel" data-i18n="admin_label_client">Modo cliente</span>
+        <span style="margin-left:auto;font-size:11px;color:var(--text-quaternary)" data-i18n="admin_lock_hint">Acceso admin 🔒</span>
       </div>
+      <button id="clearOrdersBtn" onclick="clearAllOrders()" style="display:none; width:100%; padding:10px; border:1px dashed var(--danger); border-radius:var(--radius-md); background:var(--surface); color:var(--danger); font-size:13px; font-weight:600; cursor:pointer; margin-bottom:14px;" data-i18n="clear_orders_btn">🧹 Vaciar todos los pedidos (usar solo para limpiar pruebas)</button>
       <div id="ordersList"></div>
     </div>
 
     <div id="chat" class="view">
       <div class="whatsapp-chat-card">
-        <p class="whatsapp-chat-intro">¿Tienes una pregunta sobre una prenda, un pedido o algo más? Escribe tu mensaje: se abrirá WhatsApp con todo listo, solo tienes que darle <strong>Enviar</strong> allí.</p>
-        <input type="text" id="chatName" class="form-input" placeholder="Tu nombre completo">
-        <textarea id="chatMessage" class="form-input" rows="4" placeholder="Escribe tu mensaje..." style="resize:vertical; font-family:inherit;"></textarea>
-        <button class="whatsapp-btn" onclick="sendWhatsAppMessage()">
+        <p class="whatsapp-chat-intro" data-i18n="chat_intro">¿Tienes una pregunta sobre una prenda, un pedido o algo más? Escribe tu mensaje: se abrirá WhatsApp con todo listo, solo tienes que darle <strong>Enviar</strong> allí.</p>
+        <input type="text" id="chatName" class="form-input" placeholder="Tu nombre completo" data-i18n-placeholder="order_name_placeholder">
+        <textarea id="chatMessage" class="form-input" rows="4" placeholder="Escribe tu mensaje..." data-i18n-placeholder="chat_message_placeholder" style="resize:vertical; font-family:inherit;"></textarea>
+        <button class="whatsapp-btn" onclick="sendWhatsAppMessage()" data-i18n="chat_send_btn">
           💬 Enviar por WhatsApp
         </button>
       </div>
@@ -325,91 +333,91 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
   <div id="loginModal" class="modal-overlay" onclick="closeModals(event)">
     <div class="modal" onclick="event.stopPropagation()">
       <div class="modal-header">
-        <span class="modal-title">Admin Login</span>
+        <span class="modal-title" data-i18n="login_title">Admin Login</span>
         <button class="modal-close" onclick="closeModals()">✕</button>
       </div>
-      <input type="email" id="adminEmail" class="form-input" placeholder="Correo">
+      <input type="email" id="adminEmail" class="form-input" placeholder="Correo" data-i18n-placeholder="email_placeholder">
       <div class="password-wrap">
-        <input type="password" id="adminPass" class="form-input" placeholder="Contraseña">
-        <button type="button" class="password-toggle" id="passToggleBtn" onclick="togglePassword()" title="Mostrar contraseña">👁️</button>
+        <input type="password" id="adminPass" class="form-input" placeholder="Contraseña" data-i18n-placeholder="password_placeholder">
+        <button type="button" class="password-toggle" id="passToggleBtn" onclick="togglePassword()" title="Mostrar contraseña" data-i18n-title="show_password_tooltip">👁️</button>
       </div>
-      <button class="btn-full" onclick="loginAdmin()">Ingresar</button>
-      <button class="btn-full" style="background:#dc2626; margin-top:10px; display:none;" id="logoutBtn" onclick="logoutAdmin()">Cerrar Sesión</button>
+      <button class="btn-full" onclick="loginAdmin()" data-i18n="login_btn">Ingresar</button>
+      <button class="btn-full" style="background:#dc2626; margin-top:10px; display:none;" id="logoutBtn" onclick="logoutAdmin()" data-i18n="logout_btn">Cerrar Sesión</button>
     </div>
   </div>
 
   <div id="addProductModal" class="modal-overlay" onclick="closeModals(event)">
     <div class="modal" onclick="event.stopPropagation()">
       <div class="modal-header">
-        <span class="modal-title" id="modalProductTitle">Subir Prenda</span>
+        <span class="modal-title" id="modalProductTitle" data-i18n="upload_product_title">Subir Prenda</span>
         <button class="modal-close" onclick="closeModals()">✕</button>
       </div>
       <input type="hidden" id="editProdId">
-      <input type="text" id="newProdName" class="form-input" placeholder="Nombre de la prenda">
-      <input type="number" id="newProdPrice" class="form-input" placeholder="Precio ($)">
+      <input type="text" id="newProdName" class="form-input" placeholder="Nombre de la prenda" data-i18n-placeholder="product_name_placeholder">
+      <input type="number" id="newProdPrice" class="form-input" placeholder="Precio ($)" data-i18n-placeholder="product_price_placeholder">
       <div style="display:flex; gap:8px; align-items:flex-start;">
         <select id="newProdCat" class="form-input" style="flex:1;">
-          <option value="">Selecciona una categoría</option>
+          <option value="" data-i18n="select_category">Selecciona una categoría</option>
         </select>
-        <button type="button" class="btn-sm" style="flex:0 0 auto; height:44px; margin-bottom:12px; white-space:nowrap;" onclick="openCategoryModal()">+ Categoría</button>
+        <button type="button" class="btn-sm" style="flex:0 0 auto; height:44px; margin-bottom:12px; white-space:nowrap;" onclick="openCategoryModal()" data-i18n="add_category_btn">+ Categoría</button>
       </div>
-      <input type="text" id="newProdSize" class="form-input" placeholder="Talla(s) (ej: S, M, L o Única)">
-      <input type="text" id="newProdColors" class="form-input" placeholder="Color(es) (ej: Rojo, Negro, Azul)">
+      <input type="text" id="newProdSize" class="form-input" placeholder="Talla(s) (ej: S, M, L o Única)" data-i18n-placeholder="product_size_placeholder">
+      <input type="text" id="newProdColors" class="form-input" placeholder="Color(es) (ej: Rojo, Negro, Azul)" data-i18n-placeholder="product_colors_placeholder">
       <div style="display:flex; gap:10px;">
         <div style="flex:1;">
-          <label style="font-size:12px; margin-bottom:3px; display:block;">Stock actual:</label>
-          <input type="number" id="newProdStock" class="form-input" placeholder="Cantidad" value="10">
+          <label style="font-size:12px; margin-bottom:3px; display:block;" data-i18n="current_stock_label">Stock actual:</label>
+          <input type="number" id="newProdStock" class="form-input" placeholder="Cantidad" data-i18n-placeholder="quantity_placeholder" value="10">
         </div>
         <div style="flex:1;">
-          <label style="font-size:12px; margin-bottom:3px; display:block;">Stock mínimo de alerta:</label>
-          <input type="number" id="newProdMinStock" class="form-input" placeholder="Mínimo" value="3">
+          <label style="font-size:12px; margin-bottom:3px; display:block;" data-i18n="min_stock_label">Stock mínimo de alerta:</label>
+          <input type="number" id="newProdMinStock" class="form-input" placeholder="Mínimo" data-i18n-placeholder="minimum_placeholder" value="3">
         </div>
       </div>
-      <label style="font-size:12px; margin-bottom:5px; display:block;">Selecciona una foto (Opcional por ahora):</label>
+      <label style="font-size:12px; margin-bottom:5px; display:block;" data-i18n="photo_label">Selecciona una foto (Opcional por ahora):</label>
       <input type="file" id="newProdImg" class="form-input">
-      <button class="btn-full" onclick="saveProduct()">Guardar Producto</button>
+      <button class="btn-full" onclick="saveProduct()" data-i18n="save_product_btn">Guardar Producto</button>
     </div>
   </div>
 
   <div id="logoModal" class="modal-overlay" onclick="closeModals(event)">
     <div class="modal" onclick="event.stopPropagation()">
       <div class="modal-header">
-        <span class="modal-title">Cambiar Logo de la Tienda</span>
+        <span class="modal-title" data-i18n="logo_modal_title">Cambiar Logo de la Tienda</span>
         <button class="modal-close" onclick="closeModals()">✕</button>
       </div>
-      <label style="font-size:12px; margin-bottom:5px; display:block;">Selecciona la imagen para el logo:</label>
+      <label style="font-size:12px; margin-bottom:5px; display:block;" data-i18n="logo_select_label">Selecciona la imagen para el logo:</label>
       <input type="file" id="newLogoImg" class="form-input">
-      <button class="btn-full" onclick="saveLogo()">Guardar Logo</button>
+      <button class="btn-full" onclick="saveLogo()" data-i18n="save_logo_btn">Guardar Logo</button>
     </div>
   </div>
 
   <div id="categoryModal" class="modal-overlay" onclick="closeModals(event)">
     <div class="modal" onclick="event.stopPropagation()">
       <div class="modal-header">
-        <span class="modal-title">Nueva Categoría</span>
+        <span class="modal-title" data-i18n="category_modal_title">Nueva Categoría</span>
         <button class="modal-close" onclick="closeModals()">✕</button>
       </div>
-      <input type="text" id="newCatName" class="form-input" placeholder="Nombre de la categoría (ej: Vestidos)">
-      <button class="btn-full" onclick="saveCategory()">Guardar Categoría</button>
+      <input type="text" id="newCatName" class="form-input" placeholder="Nombre de la categoría (ej: Vestidos)" data-i18n-placeholder="category_name_placeholder">
+      <button class="btn-full" onclick="saveCategory()" data-i18n="save_category_btn">Guardar Categoría</button>
     </div>
   </div>
 
   <div id="whatsappQrModal" class="modal-overlay" onclick="closeModals(event)">
     <div class="modal" onclick="event.stopPropagation()">
       <div class="modal-header">
-        <span class="modal-title">Continúa desde tu celular</span>
+        <span class="modal-title" data-i18n="qr_modal_title">Continúa desde tu celular</span>
         <button class="modal-close" onclick="closeModals()">✕</button>
       </div>
-      <p style="font-size:13.5px; color:var(--text-secondary); line-height:1.5; margin-bottom:14px;">
+      <p style="font-size:13.5px; color:var(--text-secondary); line-height:1.5; margin-bottom:14px;" data-i18n="qr_modal_text">
         Escanea este código con la cámara de <strong>tu celular</strong> (no de esta computadora) para abrir WhatsApp con tu mensaje ya listo.
       </p>
       <div style="display:flex; justify-content:center; margin-bottom:14px;">
         <img id="whatsappQrImg" src="" alt="Código QR de WhatsApp" style="width:220px; height:220px; border:1px solid var(--border); border-radius:var(--radius-md); background:#fff;">
       </div>
-      <p style="font-size:12px; color:var(--text-tertiary); text-align:center;">
+      <p style="font-size:12px; color:var(--text-tertiary); text-align:center;" data-i18n="qr_modal_alt_text">
         ¿No puedes escanear? Copia el mensaje y escríbenos a nuestro WhatsApp desde tu celular.
       </p>
-      <button class="btn-sm" style="width:100%; margin-top:10px;" onclick="copyWhatsAppMessage()">📋 Copiar mensaje</button>
+      <button class="btn-sm" style="width:100%; margin-top:10px;" onclick="copyWhatsAppMessage()" data-i18n="copy_message_btn">📋 Copiar mensaje</button>
     </div>
   </div>
 
@@ -438,13 +446,263 @@ const whatsappNumber = "573138127403";
 
 let pendingWhatsAppText = '';
 
+/* ===== I18N ===== */
+const I18N = {
+  es: {
+    tab_catalogo:'Catálogo', tab_carrito:'Carrito', tab_pedidos:'Pedidos', tab_chat:'Chat',
+    search_placeholder:'Buscar', filter_all:'Todo',
+    admin_upload_btn:'➕ Subir Prenda Nueva',
+    stock_all:'Todos', stock_available:'Disponibles', stock_low:'Poco stock', stock_out:'Agotados',
+    loading_catalog:'Cargando catálogo...', no_products:'No hay prendas disponibles',
+    add_btn:'Agregar', not_available:'No disponible', not_available_admin:'No disponible · Puedes editarla o borrarla',
+    confirm_delete_product:'¿Seguro que deseas eliminar esta prenda?', toast_product_deleted:'Producto eliminado',
+    alert_product_not_available:'Este producto no está disponible', toast_added_to_cart:'Añadido al carrito',
+    low_stock_prefix:'⚠️ Stock bajo', stock_prefix:'Stock', size_prefix:'Talla', color_prefix:'Color',
+    size_default:'Única', color_default:'Varios', edit_btn:'✏️ Editar', delete_product_btn:'🗑️ Borrar',    cart_empty:'Tu carrito está vacío',
+    order_name_placeholder:'Tu nombre completo', order_phone_placeholder:'Tu número de celular',
+    total_label:'Total a pagar', order_whatsapp_btn:'Pedir por WhatsApp',
+    admin_label_client:'Modo cliente', admin_label_admin:'Modo vendedora (Activo)',
+    admin_lock_hint:'Acceso admin 🔒',
+    clear_orders_btn:'🧹 Vaciar todos los pedidos (usar solo para limpiar pruebas)',
+    no_orders:'No hay pedidos',
+    chat_intro:'¿Tienes una pregunta sobre una prenda, un pedido o algo más? Escribe tu mensaje: se abrirá WhatsApp con todo listo, solo tienes que darle <strong>Enviar</strong> allí.',
+    chat_message_placeholder:'Escribe tu mensaje...', chat_send_btn:'💬 Enviar por WhatsApp',
+    login_title:'Admin Login', email_placeholder:'Correo', password_placeholder:'Contraseña',
+    login_btn:'Ingresar', logout_btn:'Cerrar Sesión',
+    upload_product_title:'Subir Prenda', edit_product_title:'Editar Prenda',
+    alert_admin_login_required:'Inicia sesión como administrador.',
+    toast_welcome_admin:'¡Bienvenida Administradora!', alert_login_error:'Error de acceso: ',
+    alert_auth_failed:'No se pudo iniciar la app: ', alert_auth_hint:'\n\nRevisa que el proveedor "Anonymous" esté activado en Firebase.',
+    toast_only_admin_logo:'Solo la administradora puede cambiar el logo', alert_select_logo_image:'Selecciona una imagen para el logo',
+    toast_uploading_logo:'Subiendo logo...', toast_logo_updated:'¡Logo actualizado con éxito!', alert_logo_upload_error:'Error al subir logo: ',
+    alert_login_required_category:'Debes iniciar sesión como administrador para crear categorías.', alert_action_denied_admin:'Acción denegada. Debes iniciar sesión como admin.',
+    alert_category_name_required:'Escribe un nombre para la categoría', alert_category_exists:'Esa categoría ya existe (o es muy similar a una existente)',
+    toast_category_created:'¡Categoría creada!', alert_category_create_error:'Error al crear categoría: ',
+    alert_action_not_allowed:'Acción no permitida.', confirm_delete_category:'¿Eliminar esta categoría?', toast_category_deleted:'Categoría eliminada',
+    alert_not_authorized:'No autorizado.', alert_required_fields:'Completa al menos el nombre, precio y categoría',
+    alert_stock_negative:'El stock no puede ser negativo.', alert_min_stock_negative:'El stock mínimo no puede ser negativo.',
+    toast_operation_success:'¡Operación exitosa!', alert_generic_error:'Error: ', alert_image_upload_error:'Error al subir imagen: ',
+    toast_updating_product:'Actualizando producto...', toast_saving_product:'Guardando producto...',
+    logo_tooltip:'Logo de la tienda', show_password_tooltip:'Mostrar contraseña', add_category_tooltip:'Agregar categoría', delete_category_tooltip:'Eliminar categoría',
+    product_name_placeholder:'Nombre de la prenda', product_price_placeholder:'Precio ($)',
+    select_category:'Selecciona una categoría', add_category_btn:'+ Categoría',
+    product_size_placeholder:'Talla(s) (ej: S, M, L o Única)', product_colors_placeholder:'Color(es) (ej: Rojo, Negro, Azul)',
+    current_stock_label:'Stock actual:', quantity_placeholder:'Cantidad',
+    min_stock_label:'Stock mínimo de alerta:', minimum_placeholder:'Mínimo',
+    photo_label:'Selecciona una foto (Opcional por ahora):', save_product_btn:'Guardar Producto',
+    logo_modal_title:'Cambiar Logo de la Tienda', logo_select_label:'Selecciona la imagen para el logo:', save_logo_btn:'Guardar Logo',
+    category_modal_title:'Nueva Categoría', category_name_placeholder:'Nombre de la categoría (ej: Vestidos)', save_category_btn:'Guardar Categoría',
+    qr_modal_title:'Continúa desde tu celular',
+    qr_modal_text:'Escanea este código con la cámara de <strong>tu celular</strong> (no de esta computadora) para abrir WhatsApp con tu mensaje ya listo.',
+    qr_modal_alt_text:'¿No puedes escanear? Copia el mensaje y escríbenos a nuestro WhatsApp desde tu celular.',
+    copy_message_btn:'📋 Copiar mensaje',
+    status_Pendiente:'Pendiente', status_Enviado:'Enviado', status_Entregado:'Entregado',
+    order_btn_send:'📦 Enviar', order_btn_deliver:'✅ Entregar', order_btn_edited:'✅ Editado',
+    order_btn_reopen:'↩️ Reabrir', order_btn_delete:'🗑 Eliminar', order_total:'Total',
+    toast_wa_opened:'Se abrió WhatsApp con tu mensaje. No olvides darle "Enviar" allí.',
+    toast_copied:'Mensaje copiado. Pégalo en WhatsApp desde tu celular.',
+    toast_copy_failed:'No se pudo copiar. Selecciona y copia el mensaje manualmente.',
+    toast_no_stock:'No hay más stock', toast_no_stock_available:'No hay más stock disponible',
+    toast_logged_out:'Sesión cerrada', toast_order_deleted:'Pedido eliminado',
+    toast_orders_deleted:'Pedidos eliminados', toast_no_orders_to_delete:'No hay pedidos para borrar',
+    toast_delete_cancelled:'Cancelado, no se borró nada',
+    alert_name_phone_required:'Por favor ingresa tu nombre y celular',
+    alert_order_error:'Error al procesar el pedido: ',
+    alert_delete_order_error:'Error al eliminar el pedido: ',
+    alert_clear_orders_error:'Error al vaciar los pedidos: ',
+    alert_chat_message_required:'Escribe tu mensaje antes de enviarlo.',
+    confirm_reopen_order:'¿Reabrir este pedido? Volverá al estado "Enviado" y podrás editarlo de nuevo.',
+    confirm_delete_order:'¿Eliminar este pedido de forma permanente? Esta acción no se puede deshacer.',
+    confirm_clear_orders:'Esto eliminará TODOS los pedidos actuales de forma permanente (útil para limpiar pruebas). ¿Continuar?',
+    prompt_clear_orders:'Para confirmar, escribe BORRAR en mayúsculas:',
+    wa_order_hello:'¡Hola! Soy', wa_order_intro:'. Quiero hacer un pedido:',
+    wa_order_total:'Total', wa_order_phone:'Mi celular es',
+    wa_chat_hello:'Hola, soy', wa_chat_default_name:'un cliente de la tienda',
+  },
+  en: {
+    tab_catalogo:'Catalog', tab_carrito:'Cart', tab_pedidos:'Orders', tab_chat:'Chat',
+    search_placeholder:'Search', filter_all:'All',
+    admin_upload_btn:'➕ Upload New Item',
+    stock_all:'All', stock_available:'Available', stock_low:'Low stock', stock_out:'Out of stock',
+    loading_catalog:'Loading catalog...', no_products:'No items available',
+    add_btn:'Add', not_available:'Not available', not_available_admin:'Not available · You can edit or delete it',
+    confirm_delete_product:'Are you sure you want to delete this item?', toast_product_deleted:'Product deleted',
+    alert_product_not_available:'This product is not available', toast_added_to_cart:'Added to cart',
+    low_stock_prefix:'⚠️ Low stock', stock_prefix:'Stock', size_prefix:'Size', color_prefix:'Color',
+    size_default:'One Size', color_default:'Various', edit_btn:'✏️ Edit', delete_product_btn:'🗑️ Delete',    cart_empty:'Your cart is empty',
+    order_name_placeholder:'Your full name', order_phone_placeholder:'Your phone number',
+    total_label:'Total to pay', order_whatsapp_btn:'Order via WhatsApp',
+    admin_label_client:'Customer mode', admin_label_admin:'Seller mode (Active)',
+    admin_lock_hint:'Admin access 🔒',
+    clear_orders_btn:'🧹 Clear all orders (test data cleanup only)',
+    no_orders:'No orders yet',
+    chat_intro:'Have a question about an item, an order, or anything else? Write your message: WhatsApp will open with everything ready, just tap <strong>Send</strong> there.',
+    chat_message_placeholder:'Write your message...', chat_send_btn:'💬 Send via WhatsApp',
+    login_title:'Admin Login', email_placeholder:'Email', password_placeholder:'Password',
+    login_btn:'Log In', logout_btn:'Log Out',
+    upload_product_title:'Upload Item', edit_product_title:'Edit Item',
+    alert_admin_login_required:'Log in as an administrator.',
+    toast_welcome_admin:'Welcome, Admin!', alert_login_error:'Login error: ',
+    alert_auth_failed:'Could not start the app: ', alert_auth_hint:'\n\nCheck that the "Anonymous" provider is enabled in Firebase.',
+    toast_only_admin_logo:'Only the administrator can change the logo', alert_select_logo_image:'Select an image for the logo',
+    toast_uploading_logo:'Uploading logo...', toast_logo_updated:'Logo updated successfully!', alert_logo_upload_error:'Error uploading logo: ',
+    alert_login_required_category:'You must log in as administrator to create categories.', alert_action_denied_admin:'Action denied. You must log in as admin.',
+    alert_category_name_required:'Enter a name for the category', alert_category_exists:'That category already exists (or is very similar to an existing one)',
+    toast_category_created:'Category created!', alert_category_create_error:'Error creating category: ',
+    alert_action_not_allowed:'Action not allowed.', confirm_delete_category:'Delete this category?', toast_category_deleted:'Category deleted',
+    alert_not_authorized:'Not authorized.', alert_required_fields:'Fill in at least the name, price, and category',
+    alert_stock_negative:'Stock cannot be negative.', alert_min_stock_negative:'Minimum stock cannot be negative.',
+    toast_operation_success:'Success!', alert_generic_error:'Error: ', alert_image_upload_error:'Error uploading image: ',
+    toast_updating_product:'Updating product...', toast_saving_product:'Saving product...',
+    logo_tooltip:'Store logo', show_password_tooltip:'Show password', add_category_tooltip:'Add category', delete_category_tooltip:'Delete category',
+    product_name_placeholder:'Item name', product_price_placeholder:'Price ($)',
+    select_category:'Select a category', add_category_btn:'+ Category',
+    product_size_placeholder:'Size(s) (e.g. S, M, L or One Size)', product_colors_placeholder:'Color(s) (e.g. Red, Black, Blue)',
+    current_stock_label:'Current stock:', quantity_placeholder:'Quantity',
+    min_stock_label:'Minimum stock alert:', minimum_placeholder:'Minimum',
+    photo_label:'Select a photo (optional for now):', save_product_btn:'Save Product',
+    logo_modal_title:'Change Store Logo', logo_select_label:'Select the image for the logo:', save_logo_btn:'Save Logo',
+    category_modal_title:'New Category', category_name_placeholder:'Category name (e.g. Dresses)', save_category_btn:'Save Category',
+    qr_modal_title:'Continue from your phone',
+    qr_modal_text:'Scan this code with <strong>your phone\'s</strong> camera (not this computer) to open WhatsApp with your message ready.',
+    qr_modal_alt_text:'Can\'t scan? Copy the message and write to us on WhatsApp from your phone.',
+    copy_message_btn:'📋 Copy message',
+    status_Pendiente:'Pending', status_Enviado:'Shipped', status_Entregado:'Delivered',
+    order_btn_send:'📦 Ship', order_btn_deliver:'✅ Deliver', order_btn_edited:'✅ Edited',
+    order_btn_reopen:'↩️ Reopen', order_btn_delete:'🗑 Delete', order_total:'Total',
+    toast_wa_opened:'WhatsApp opened with your message. Don\'t forget to tap "Send" there.',
+    toast_copied:'Message copied. Paste it in WhatsApp from your phone.',
+    toast_copy_failed:'Could not copy. Select and copy the message manually.',
+    toast_no_stock:'No more stock', toast_no_stock_available:'No more stock available',
+    toast_logged_out:'Signed out', toast_order_deleted:'Order deleted',
+    toast_orders_deleted:'Orders deleted', toast_no_orders_to_delete:'No orders to delete',
+    toast_delete_cancelled:'Cancelled, nothing was deleted',
+    alert_name_phone_required:'Please enter your name and phone number',
+    alert_order_error:'Error processing the order: ',
+    alert_delete_order_error:'Error deleting the order: ',
+    alert_clear_orders_error:'Error clearing the orders: ',
+    alert_chat_message_required:'Write your message before sending it.',
+    confirm_reopen_order:'Reopen this order? It will go back to "Shipped" status and you can edit it again.',
+    confirm_delete_order:'Permanently delete this order? This action cannot be undone.',
+    confirm_clear_orders:'This will permanently delete ALL current orders (useful for clearing test data). Continue?',
+    prompt_clear_orders:'To confirm, type DELETE in capital letters:',
+    wa_order_hello:'Hello! I\'m', wa_order_intro:'. I\'d like to place an order:',
+    wa_order_total:'Total', wa_order_phone:'My phone number is',
+    wa_chat_hello:'Hello, I\'m', wa_chat_default_name:'a store customer',
+  },
+  fr: {
+    tab_catalogo:'Catalogue', tab_carrito:'Panier', tab_pedidos:'Commandes', tab_chat:'Chat',
+    search_placeholder:'Rechercher', filter_all:'Tout',
+    admin_upload_btn:'➕ Ajouter un article',
+    stock_all:'Tous', stock_available:'Disponibles', stock_low:'Stock faible', stock_out:'Épuisé',
+    loading_catalog:'Chargement du catalogue...', no_products:'Aucun article disponible',
+    add_btn:'Ajouter', not_available:'Non disponible', not_available_admin:'Non disponible · Vous pouvez la modifier ou la supprimer',
+    confirm_delete_product:'Voulez-vous vraiment supprimer cet article ?', toast_product_deleted:'Produit supprimé',
+    alert_product_not_available:'Ce produit n\'est pas disponible', toast_added_to_cart:'Ajouté au panier',
+    low_stock_prefix:'⚠️ Stock faible', stock_prefix:'Stock', size_prefix:'Taille', color_prefix:'Couleur',
+    size_default:'Unique', color_default:'Divers', edit_btn:'✏️ Modifier', delete_product_btn:'🗑️ Supprimer',    cart_empty:'Votre panier est vide',
+    order_name_placeholder:'Votre nom complet', order_phone_placeholder:'Votre numéro de téléphone',
+    total_label:'Total à payer', order_whatsapp_btn:'Commander via WhatsApp',
+    admin_label_client:'Mode client', admin_label_admin:'Mode vendeuse (Actif)',
+    admin_lock_hint:'Accès admin 🔒',
+    clear_orders_btn:'🧹 Vider toutes les commandes (nettoyage des tests uniquement)',
+    no_orders:'Aucune commande',
+    chat_intro:'Une question sur un article, une commande ou autre chose ? Écrivez votre message : WhatsApp s\'ouvrira avec tout prêt, il ne restera qu\'à appuyer sur <strong>Envoyer</strong>.',
+    chat_message_placeholder:'Écrivez votre message...', chat_send_btn:'💬 Envoyer via WhatsApp',
+    login_title:'Connexion admin', email_placeholder:'E-mail', password_placeholder:'Mot de passe',
+    login_btn:'Se connecter', logout_btn:'Se déconnecter',
+    upload_product_title:'Ajouter un article', edit_product_title:'Modifier l\'article',
+    alert_admin_login_required:'Connectez-vous en tant qu\'administrateur.',
+    toast_welcome_admin:'Bienvenue, administratrice !', alert_login_error:'Erreur de connexion : ',
+    alert_auth_failed:'Impossible de démarrer l\'application : ', alert_auth_hint:'\n\nVérifiez que le fournisseur "Anonymous" est activé dans Firebase.',
+    toast_only_admin_logo:'Seule l\'administratrice peut changer le logo', alert_select_logo_image:'Sélectionnez une image pour le logo',
+    toast_uploading_logo:'Envoi du logo...', toast_logo_updated:'Logo mis à jour avec succès !', alert_logo_upload_error:'Erreur lors de l\'envoi du logo : ',
+    alert_login_required_category:'Vous devez vous connecter en tant qu\'administrateur pour créer des catégories.', alert_action_denied_admin:'Action refusée. Vous devez vous connecter en tant qu\'admin.',
+    alert_category_name_required:'Saisissez un nom pour la catégorie', alert_category_exists:'Cette catégorie existe déjà (ou est très similaire à une catégorie existante)',
+    toast_category_created:'Catégorie créée !', alert_category_create_error:'Erreur lors de la création de la catégorie : ',
+    alert_action_not_allowed:'Action non autorisée.', confirm_delete_category:'Supprimer cette catégorie ?', toast_category_deleted:'Catégorie supprimée',
+    alert_not_authorized:'Non autorisé.', alert_required_fields:'Renseignez au moins le nom, le prix et la catégorie',
+    alert_stock_negative:'Le stock ne peut pas être négatif.', alert_min_stock_negative:'Le stock minimum ne peut pas être négatif.',
+    toast_operation_success:'Opération réussie !', alert_generic_error:'Erreur : ', alert_image_upload_error:'Erreur lors de l\'envoi de l\'image : ',
+    toast_updating_product:'Mise à jour du produit...', toast_saving_product:'Enregistrement du produit...',
+    logo_tooltip:'Logo de la boutique', show_password_tooltip:'Afficher le mot de passe', add_category_tooltip:'Ajouter une catégorie', delete_category_tooltip:'Supprimer la catégorie',
+    product_name_placeholder:'Nom de l\'article', product_price_placeholder:'Prix ($)',
+    select_category:'Choisissez une catégorie', add_category_btn:'+ Catégorie',
+    product_size_placeholder:'Taille(s) (ex : S, M, L ou Unique)', product_colors_placeholder:'Couleur(s) (ex : Rouge, Noir, Bleu)',
+    current_stock_label:'Stock actuel :', quantity_placeholder:'Quantité',
+    min_stock_label:'Stock minimum d\'alerte :', minimum_placeholder:'Minimum',
+    photo_label:'Choisissez une photo (facultatif pour l\'instant) :', save_product_btn:'Enregistrer le produit',
+    logo_modal_title:'Changer le logo de la boutique', logo_select_label:'Choisissez l\'image du logo :', save_logo_btn:'Enregistrer le logo',
+    category_modal_title:'Nouvelle catégorie', category_name_placeholder:'Nom de la catégorie (ex : Robes)', save_category_btn:'Enregistrer la catégorie',
+    qr_modal_title:'Continuez depuis votre téléphone',
+    qr_modal_text:'Scannez ce code avec l\'appareil photo de <strong>votre téléphone</strong> (pas cet ordinateur) pour ouvrir WhatsApp avec votre message prêt.',
+    qr_modal_alt_text:'Vous ne pouvez pas scanner ? Copiez le message et écrivez-nous sur WhatsApp depuis votre téléphone.',
+    copy_message_btn:'📋 Copier le message',
+    status_Pendiente:'En attente', status_Enviado:'Expédiée', status_Entregado:'Livrée',
+    order_btn_send:'📦 Expédier', order_btn_deliver:'✅ Livrer', order_btn_edited:'✅ Modifiée',
+    order_btn_reopen:'↩️ Rouvrir', order_btn_delete:'🗑 Supprimer', order_total:'Total',
+    toast_wa_opened:'WhatsApp s\'est ouvert avec votre message. N\'oubliez pas d\'appuyer sur "Envoyer" là-bas.',
+    toast_copied:'Message copié. Collez-le dans WhatsApp depuis votre téléphone.',
+    toast_copy_failed:'Impossible de copier. Sélectionnez et copiez le message manuellement.',
+    toast_no_stock:'Plus de stock', toast_no_stock_available:'Plus de stock disponible',
+    toast_logged_out:'Déconnecté(e)', toast_order_deleted:'Commande supprimée',
+    toast_orders_deleted:'Commandes supprimées', toast_no_orders_to_delete:'Aucune commande à supprimer',
+    toast_delete_cancelled:'Annulé, rien n\'a été supprimé',
+    alert_name_phone_required:'Merci d\'indiquer votre nom et votre numéro de téléphone',
+    alert_order_error:'Erreur lors du traitement de la commande : ',
+    alert_delete_order_error:'Erreur lors de la suppression de la commande : ',
+    alert_clear_orders_error:'Erreur lors de la suppression des commandes : ',
+    alert_chat_message_required:'Écrivez votre message avant de l\'envoyer.',
+    confirm_reopen_order:'Rouvrir cette commande ? Elle repassera au statut "Expédiée" et vous pourrez la modifier à nouveau.',
+    confirm_delete_order:'Supprimer définitivement cette commande ? Cette action est irréversible.',
+    confirm_clear_orders:'Cela supprimera définitivement TOUTES les commandes actuelles (utile pour nettoyer les tests). Continuer ?',
+    prompt_clear_orders:'Pour confirmer, tapez SUPPRIMER en majuscules :',
+    wa_order_hello:'Bonjour ! Je suis', wa_order_intro:'. Je souhaite passer une commande :',
+    wa_order_total:'Total', wa_order_phone:'Mon numéro de téléphone est',
+    wa_chat_hello:'Bonjour, je suis', wa_chat_default_name:'un client de la boutique',
+  }
+};
+
+let currentLang = localStorage.getItem('tienda_lang') || 'es';
+
+function t(key) {
+  return (I18N[currentLang] && I18N[currentLang][key]) || I18N.es[key] || key;
+}
+
+function applyStaticTranslations() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.innerHTML = t(el.getAttribute('data-i18n'));
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    el.setAttribute('placeholder', t(el.getAttribute('data-i18n-placeholder')));
+  });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    el.setAttribute('title', t(el.getAttribute('data-i18n-title')));
+  });
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-lang') === currentLang);
+  });
+  document.documentElement.setAttribute('lang', currentLang);
+}
+
+function setLanguage(lang) {
+  if (!I18N[lang]) return;
+  currentLang = lang;
+  localStorage.setItem('tienda_lang', lang);
+  applyStaticTranslations();
+  document.getElementById('adminLabel').textContent = isAdmin ? t('admin_label_admin') : t('admin_label_client');
+  renderProducts();
+  renderCart();
+  if (lastOrdersDocs) renderOrdersList(lastOrdersDocs);
+}
+
 function openWhatsApp(text) {
   const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
   const waUrl = 'https://wa.me/' + whatsappNumber + '?text=' + encodeURIComponent(text);
 
   if (isMobile) {
     window.open(waUrl, '_blank');
-    showToast('Se abrió WhatsApp con tu mensaje. No olvides darle "Enviar" allí.');
+    showToast(t('toast_wa_opened'));
     return;
   }
 
@@ -456,8 +714,8 @@ function openWhatsApp(text) {
 
 function copyWhatsAppMessage() {
   navigator.clipboard.writeText(pendingWhatsAppText)
-    .then(() => showToast('Mensaje copiado. Pégalo en WhatsApp desde tu celular.'))
-    .catch(() => showToast('No se pudo copiar. Selecciona y copia el mensaje manualmente.'));
+    .then(() => showToast(t('toast_copied')))
+    .catch(() => showToast(t('toast_copy_failed')));
 }
 const FALLBACK_IMG = 'data:image/svg+xml;utf8,' + encodeURIComponent(
   `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="#F5EDE4"/><text x="50%" y="50%" font-family="sans-serif" font-size="16" fill="#A89484" text-anchor="middle" dominant-baseline="middle">Sin imagen</text></svg>`
@@ -474,7 +732,7 @@ auth.onAuthStateChanged(user => {
   if (!user) {
     auth.signInAnonymously().catch(err => {
       console.error('Error de autenticación:', err);
-      alert('No se pudo iniciar la app: ' + err.message + '\n\nRevisa que el proveedor "Anonymous" esté activado en Firebase.');
+      alert(t('alert_auth_failed') + err.message + t('alert_auth_hint'));
     });
     return;
   }
@@ -482,11 +740,12 @@ auth.onAuthStateChanged(user => {
   isAdmin = !user.isAnonymous;
   clientId = user.uid;
 
-  document.getElementById('adminLabel').textContent = isAdmin ? 'Modo vendedora (Activo)' : 'Modo cliente';
+  document.getElementById('adminLabel').textContent = isAdmin ? t('admin_label_admin') : t('admin_label_client');
   document.getElementById('headerLogoBtn').classList.toggle('admin', isAdmin);
   document.getElementById('adminControlsArea').style.display = isAdmin ? 'block' : 'none';
   document.getElementById('logoutBtn').style.display = isAdmin ? 'block' : 'none';
   document.getElementById('stockFilterBar').style.display = isAdmin ? 'flex' : 'none';
+  document.getElementById('clearOrdersBtn').style.display = isAdmin ? 'block' : 'none';
   if(!isAdmin) currentStockFilter = 'all';
 
   loadLogo();
@@ -518,10 +777,10 @@ function loginAdmin() {
   const email = document.getElementById('adminEmail').value;
   const pass = document.getElementById('adminPass').value;
   auth.signInWithEmailAndPassword(email, pass).then(() => {
-    closeModals(); showToast('¡Bienvenida Administradora!');
-  }).catch(e => alert("Error de acceso: " + e.message));
+    closeModals(); showToast(t('toast_welcome_admin'));
+  }).catch(e => alert(t('alert_login_error') + e.message));
 }
-function logoutAdmin() { auth.signOut(); closeModals(); showToast('Sesión cerrada'); }
+function logoutAdmin() { auth.signOut(); closeModals(); showToast(t('toast_logged_out')); }
 
 function loadLogo() {
   db.collection('config').doc('store').get().then(doc => {
@@ -542,16 +801,16 @@ function handleLogoClick() {
   if(isAdmin) {
     openLogoModal();
   } else {
-    showToast('Solo la administradora puede cambiar el logo');
+    showToast(t('toast_only_admin_logo'));
   }
 }
 
 function saveLogo() {
   const file = document.getElementById('newLogoImg').files[0];
-  if(!file) return alert("Selecciona una imagen para el logo");
+  if(!file) return alert(t('alert_select_logo_image'));
 
   closeModals();
-  showToast('Subiendo logo...');
+  showToast(t('toast_uploading_logo'));
 
   const ref = storage.ref(`logo/store_logo_${Date.now()}`);
   ref.put(file).then(snap => snap.ref.getDownloadURL()).then(url => {
@@ -559,8 +818,8 @@ function saveLogo() {
   }).then(() => {
     document.getElementById('newLogoImg').value = '';
     loadLogo();
-    showToast('¡Logo actualizado con éxito!');
-  }).catch(err => alert("Error al subir logo: " + err.message));
+    showToast(t('toast_logo_updated'));
+  }).catch(err => alert(t('alert_logo_upload_error') + err.message));
 }
 
 function loadProducts() {
@@ -596,7 +855,7 @@ function renderCategories() {
   let html = `<button class="filter-chip ${currentCategory === 'all' ? 'active' : ''}" data-filter="all" onclick="setCategory('all')">Todo</button>`;
 
   if(isAdmin) {
-    html += `<button class="filter-chip-add" onclick="openCategoryModal()" title="Agregar categoría">+</button>`;
+    html += `<button class="filter-chip-add" onclick="openCategoryModal()" title="${t('add_category_tooltip')}">+</button>`;
   }
 
   categories.forEach(cat => {
@@ -605,7 +864,7 @@ function renderCategories() {
     html += `
       <span class="chip-wrap">
         <button class="filter-chip ${isActive}" data-filter="${key}" onclick="setCategory('${key}')">${escapeHtml(cat.name)}</button>
-        ${isAdmin ? `<button class="chip-delete-btn" onclick="deleteCategory('${cat.id}', event)" title="Eliminar categoría">✕</button>` : ''}
+        ${isAdmin ? `<button class="chip-delete-btn" onclick="deleteCategory('${cat.id}', event)" title="${t('delete_category_tooltip')}">✕</button>` : ''}
       </span>`;
   });
 
@@ -613,35 +872,35 @@ function renderCategories() {
 }
 
 function openCategoryModal() {
-  if (!isAdmin) return alert("Debes iniciar sesión como administrador para crear categorías.");
+  if (!isAdmin) return alert(t('alert_login_required_category'));
   document.getElementById('newCatName').value = '';
   document.getElementById('categoryModal').classList.add('active');
 }
 
 function saveCategory() {
-  if (!isAdmin) return alert("Acción denegada. Debes iniciar sesión como admin.");
+  if (!isAdmin) return alert(t('alert_action_denied_admin'));
   const name = document.getElementById('newCatName').value.trim();
-  if(!name) return alert('Escribe un nombre para la categoría');
+  if(!name) return alert(t('alert_category_name_required'));
 
   const exists = categories.some(c => slugify(c.name) === slugify(name));
-  if(exists) return alert('Esa categoría ya existe (o es muy similar a una existente)');
+  if(exists) return alert(t('alert_category_exists'));
 
   db.collection('categories').add({
     name, createdAt: firebase.firestore.FieldValue.serverTimestamp()
   }).then(() => {
     closeModals();
-    showToast('¡Categoría creada!');
+    showToast(t('toast_category_created'));
   }).catch(err => {
     console.error(err);
-    alert('Error al crear categoría: ' + err.message);
+    alert(t('alert_category_create_error') + err.message);
   });
 }
 
 function deleteCategory(id, event) {
   if(event) event.stopPropagation();
-  if(!isAdmin) return alert("Acción no permitida.");
-  if(confirm('¿Eliminar esta categoría?')) {
-    db.collection('categories').doc(id).delete().then(() => showToast('Categoría eliminada')).catch(err => alert(err.message));
+  if(!isAdmin) return alert(t('alert_action_not_allowed'));
+  if(confirm(t('confirm_delete_category'))) {
+    db.collection('categories').doc(id).delete().then(() => showToast(t('toast_category_deleted'))).catch(err => alert(err.message));
   }
 }
 
@@ -701,20 +960,20 @@ function renderProducts() {
     return matchCat && matchSearch && matchStock;
   });
 
-  grid.innerHTML = filtered.map(p => {
+  grid.innerHTML = filtered.length ? filtered.map(p => {
     const stock = Number(p.stock ?? 10);
     const minStock = Number(p.minStock ?? 2);
     const isOut = stock <= 0;
 
-    let warningBadge = (isAdmin && !isOut && stock <= minStock) ? `<div class="stock-warning-badge">⚠️ Stock bajo (${stock})</div>` : '';
-    const outOverlay = isOut ? `<div class="out-of-stock-overlay">${isAdmin ? 'No disponible · Puedes editarla o borrarla' : 'No disponible'}</div>` : '';
-    const addBtn = isOut ? '' : `<button class="btn-sm" style="background:var(--text-primary); color:white;" onclick="addToCart('${p.id}')">Agregar</button>`;
-    const stockText = isAdmin ? `<div class="product-details-text">Stock: ${stock}</div>` : '';
+    let warningBadge = (isAdmin && !isOut && stock <= minStock) ? `<div class="stock-warning-badge">${t('low_stock_prefix')} (${stock})</div>` : '';
+    const outOverlay = isOut ? `<div class="out-of-stock-overlay">${isAdmin ? t('not_available_admin') : t('not_available')}</div>` : '';
+    const addBtn = isOut ? '' : `<button class="btn-sm" style="background:var(--text-primary); color:white;" onclick="addToCart('${p.id}')">${t('add_btn')}</button>`;
+    const stockText = isAdmin ? `<div class="product-details-text">${t('stock_prefix')}: ${stock}</div>` : '';
 
     const adminControls = isAdmin ? `
       <div class="admin-product-controls" style="display:flex; gap:5px; margin-top:5px; position:relative; z-index:5;">
-        <button type="button" class="btn-sm" style="background:var(--surface-muted);" onclick="event.stopPropagation(); openEditModal('${p.id}')">✏️ Editar</button>
-        <button type="button" class="btn-sm" style="background:#dc2626; color:#fff;" onclick="event.stopPropagation(); deleteProduct('${p.id}')">🗑️ Borrar</button>
+        <button type="button" class="btn-sm" style="background:var(--surface-muted);" onclick="event.stopPropagation(); openEditModal('${p.id}')">${t('edit_btn')}</button>
+        <button type="button" class="btn-sm" style="background:#dc2626; color:#fff;" onclick="event.stopPropagation(); deleteProduct('${p.id}')">${t('delete_product_btn')}</button>
       </div>
     ` : '';
     
@@ -724,7 +983,7 @@ function renderProducts() {
       <div class="product-img"><img src="${p.image || FALLBACK_IMG}" alt="${escapeHtml(p.name)}" onerror="this.onerror=null;this.src='${FALLBACK_IMG}';" onclick="event.stopPropagation(); openImageLightbox(this.src, this.alt)"></div>
       <div class="product-info">
         <div class="product-name">${escapeHtml(p.name)}</div>
-        <div class="product-details-text">Talla: ${escapeHtml(p.size || 'Única')} | Color: ${escapeHtml(p.colors || 'Varios')}</div>
+        <div class="product-details-text">${t('size_prefix')}: ${escapeHtml(p.size || t('size_default'))} | ${t('color_prefix')}: ${escapeHtml(p.colors || t('color_default'))}</div>
         ${stockText}
         ${warningBadge}
         <div class="product-price">$${p.price}</div>
@@ -732,15 +991,15 @@ function renderProducts() {
         ${adminControls}
       </div>
     </div>`;
-  }).join('');
+  }).join('') : `<div class="empty-state" style="grid-column:1/-1;"><p>${t('no_products')}</p></div>`;
 }
 
 function setCategory(cat) { currentCategory = cat; renderCategories(); renderProducts(); }
 function filterProducts() { currentSearch = document.getElementById('searchInput').value; renderProducts(); }
 
 function openAddModal() {
-  if (!isAdmin) return alert("Inicia sesión como administrador.");
-  document.getElementById('modalProductTitle').textContent = 'Subir Prenda';
+  if (!isAdmin) return alert(t('alert_admin_login_required'));
+  document.getElementById('modalProductTitle').textContent = t('upload_product_title');
   document.getElementById('editProdId').value = '';
   document.getElementById('newProdName').value = '';
   document.getElementById('newProdPrice').value = '';
@@ -756,7 +1015,7 @@ function openAddModal() {
 function openEditModal(id) {
   const p = allProducts.find(x => x.id === id);
   if(!p) return;
-  document.getElementById('modalProductTitle').textContent = 'Editar Prenda';
+  document.getElementById('modalProductTitle').textContent = t('edit_product_title');
   document.getElementById('editProdId').value = p.id;
   document.getElementById('newProdName').value = p.name || '';
   document.getElementById('newProdPrice').value = p.price || '';
@@ -770,7 +1029,7 @@ function openEditModal(id) {
 }
 
 function saveProduct() {
-  if (!isAdmin) return alert("No autorizado.");
+  if (!isAdmin) return alert(t('alert_not_authorized'));
   const editId = document.getElementById('editProdId').value;
   const name = document.getElementById('newProdName').value;
   const price = document.getElementById('newProdPrice').value;
@@ -781,17 +1040,17 @@ function saveProduct() {
   const minStock = document.getElementById('newProdMinStock').value;
   const file = document.getElementById('newProdImg').files[0];
 
-  if(!name || !price || !cat) return alert("Completa al menos el nombre, precio y categoría");
-  if(stock !== '' && Number(stock) < 0) return alert("El stock no puede ser negativo.");
-  if(minStock !== '' && Number(minStock) < 0) return alert("El stock mínimo no puede ser negativo.");
+  if(!name || !price || !cat) return alert(t('alert_required_fields'));
+  if(stock !== '' && Number(stock) < 0) return alert(t('alert_stock_negative'));
+  if(minStock !== '' && Number(minStock) < 0) return alert(t('alert_min_stock_negative'));
 
   closeModals();
-  showToast(editId ? 'Actualizando producto...' : 'Guardando producto...');
+  showToast(editId ? t('toast_updating_product') : t('toast_saving_product'));
 
   const saveData = (imageUrl) => {
     const dataObj = {
       name, price: Number(price), category: cat, 
-      size: size || 'Única', colors: colors || 'Único', 
+      size: size || t('size_default'), colors: colors || t('color_default'), 
       stock: Number(stock === '' ? 0 : stock), minStock: Number(minStock === '' ? 0 : minStock)
     };
     if(imageUrl) {
@@ -803,14 +1062,14 @@ function saveProduct() {
     let promise = editId ? db.collection('products').doc(editId).update(dataObj) : 
       db.collection('products').add({...dataObj, createdAt: firebase.firestore.FieldValue.serverTimestamp()});
 
-    promise.then(() => showToast('¡Operación exitosa!')).catch(err => alert("Error: " + err.message));
+    promise.then(() => showToast(t('toast_operation_success'))).catch(err => alert(t('alert_generic_error') + err.message));
   };
 
   if(file) {
     storage.ref(`products/${Date.now()}_${file.name}`).put(file)
       .then(snap => snap.ref.getDownloadURL())
       .then(url => saveData(url))
-      .catch(err => alert("Error al subir imagen: " + err.message));
+      .catch(err => alert(t('alert_image_upload_error') + err.message));
   } else {
     saveData(null);
   }
@@ -818,21 +1077,21 @@ function saveProduct() {
 
 function deleteProduct(id) {
   if(!isAdmin) return;
-  if(confirm("¿Seguro que deseas eliminar esta prenda?")) {
-    db.collection('products').doc(id).delete().then(() => showToast('Producto eliminado'));
+  if(confirm(t('confirm_delete_product'))) {
+    db.collection('products').doc(id).delete().then(() => showToast(t('toast_product_deleted')));
   }
 }
 
 function addToCart(id) {
   const p = allProducts.find(x => x.id === id);
-  if(!p || (p.stock ?? 10) <= 0) return alert("Este producto no está disponible");
+  if(!p || (p.stock ?? 10) <= 0) return alert(t('alert_product_not_available'));
 
   const existing = cart.find(item => item.id === id);
-  if(existing && existing.qty + 1 > p.stock) return alert("No hay más stock disponible");
+  if(existing && existing.qty + 1 > p.stock) return alert(t('toast_no_stock_available'));
 
   if(existing) existing.qty++; 
   else cart.push({id, qty:1, name: p.name, price: p.price, image: p.image});
-  saveCart(); renderCart(); showToast('Añadido al carrito');
+  saveCart(); renderCart(); showToast(t('toast_added_to_cart'));
 }
 
 function saveCart() { localStorage.setItem('tienda_cart', JSON.stringify(cart)); updateCartBadge(); }
@@ -878,7 +1137,7 @@ function changeQty(index, delta) {
   const stock = product ? Number(product.stock ?? 10) : Infinity;
   const newQty = item.qty + delta;
   if(newQty < 1) return removeCart(index);
-  if(newQty > stock) return showToast('No hay más stock');
+  if(newQty > stock) return showToast(t('toast_no_stock'));
   item.qty = newQty;
   saveCart(); renderCart();
 }
@@ -888,15 +1147,15 @@ function removeCart(index) { cart.splice(index, 1); saveCart(); renderCart(); }
 function sendWhatsAppOrder() {
   const name = document.getElementById('orderName').value;
   const phone = document.getElementById('orderPhone').value;
-  if(!name || !phone) return alert("Por favor ingresa tu nombre y celular");
+  if(!name || !phone) return alert(t('alert_name_phone_required'));
 
   let total = 0;
-  let text = `¡Hola! Soy ${name}. Quiero hacer un pedido:\n\n`;
+  let text = `${t('wa_order_hello')} ${name}${t('wa_order_intro')}\n\n`;
   cart.forEach(item => {
     text += `• ${item.name} (x${item.qty}) = $${item.price * item.qty}\n`;
     total += item.price * item.qty;
   });
-  text += `\nTotal: $${total}\nMi celular es: ${phone}`;
+  text += `\n${t('wa_order_total')}: $${total}\n${t('wa_order_phone')}: ${phone}`;
 
   const batch = db.batch();
   cart.forEach(item => {
@@ -914,58 +1173,88 @@ function sendWhatsAppOrder() {
   }).then(() => {
     cart = []; saveCart(); renderCart(); switchView('pedidos');
     openWhatsApp(text);
-  }).catch(err => alert("Error al procesar el pedido: " + err.message));
+  }).catch(err => alert(t('alert_order_error') + err.message));
 }
+
+let lastOrdersDocs = null;
 
 function loadOrders() {
   let query = isAdmin ? db.collection('orders') : db.collection('orders').where('clientId', '==', clientId);
   query.orderBy('createdAt', 'desc').onSnapshot(snap => {
-    const list = document.getElementById('ordersList');
-    list.innerHTML = snap.empty ? '<div class="empty-state">No hay pedidos</div>' : '';
-    
-    snap.forEach(doc => {
-      const o = doc.data();
-      const isDelivered = o.status === 'Entregado';
-      const adminBtns = isAdmin ? `
-        <div class="order-actions">
-          ${isDelivered ? `
-            <button class="btn-sm" disabled style="opacity:0.55; cursor:not-allowed;">✅ Editado</button>
-            <button class="btn-sm" onclick="reopenOrder('${doc.id}')" title="Volver a estado Enviado">↩️ Reabrir</button>
-          ` : `
-            <button class="btn-sm" onclick="changeStatus('${doc.id}', 'Enviado')">📦 Enviar</button>
-            <button class="btn-sm" onclick="changeStatus('${doc.id}', 'Entregado')">✅ Entregar</button>
-          `}
-        </div>` : '';
-
-      list.innerHTML += `
-        <div class="order-card">
-          <div class="order-header">
-            <strong>${escapeHtml(o.customerName)}</strong>
-            <span class="order-status status-${o.status}">${escapeHtml(o.status)}</span>
-          </div>
-          <p style="font-size:13px; color:var(--text-secondary)">${o.items.map(i=>`${escapeHtml(i.name)} (x${i.qty})`).join(', ')}</p>
-          <p><strong>Total: $${o.total}</strong></p>
-          ${adminBtns}
-        </div>`;
-    });
+    lastOrdersDocs = snap.docs.map(doc => ({ id: doc.id, data: doc.data() }));
+    renderOrdersList(lastOrdersDocs);
   }, () => {});
+}
+
+function renderOrdersList(docs) {
+  const list = document.getElementById('ordersList');
+  if (!docs.length) { list.innerHTML = `<div class="empty-state"><p>${t('no_orders')}</p></div>`; return; }
+
+  list.innerHTML = docs.map(({ id, data: o }) => {
+    const isDelivered = o.status === 'Entregado';
+    const adminBtns = isAdmin ? `
+      <div class="order-actions">
+        ${isDelivered ? `
+          <button class="btn-sm" disabled style="opacity:0.55; cursor:not-allowed;">${t('order_btn_edited')}</button>
+          <button class="btn-sm" onclick="reopenOrder('${id}')" title="${t('confirm_reopen_order')}">${t('order_btn_reopen')}</button>
+        ` : `
+          <button class="btn-sm" onclick="changeStatus('${id}', 'Enviado')">${t('order_btn_send')}</button>
+          <button class="btn-sm" onclick="changeStatus('${id}', 'Entregado')">${t('order_btn_deliver')}</button>
+        `}
+        <button class="btn-sm" onclick="deleteOrder('${id}')" title="${t('order_btn_delete')}" style="color:var(--danger); border-color:var(--danger);">${t('order_btn_delete')}</button>
+      </div>` : '';
+
+    return `
+      <div class="order-card">
+        <div class="order-header">
+          <strong>${escapeHtml(o.customerName)}</strong>
+          <span class="order-status status-${o.status}">${escapeHtml(t('status_' + o.status))}</span>
+        </div>
+        <p style="font-size:13px; color:var(--text-secondary)">${o.items.map(i=>`${escapeHtml(i.name)} (x${i.qty})`).join(', ')}</p>
+        <p><strong>${t('order_total')}: $${o.total}</strong></p>
+        ${adminBtns}
+      </div>`;
+  }).join('');
 }
 
 function changeStatus(id, status) { if(isAdmin) db.collection('orders').doc(id).update({status}); }
 
 function reopenOrder(id) {
   if(!isAdmin) return;
-  if(!confirm('¿Reabrir este pedido? Volverá al estado "Enviado" y podrás editarlo de nuevo.')) return;
+  if(!confirm(t('confirm_reopen_order'))) return;
   db.collection('orders').doc(id).update({status:'Enviado'});
+}
+
+function deleteOrder(id) {
+  if(!isAdmin) return;
+  if(!confirm(t('confirm_delete_order'))) return;
+  db.collection('orders').doc(id).delete()
+    .then(() => showToast(t('toast_order_deleted')))
+    .catch(err => alert(t('alert_delete_order_error') + err.message));
+}
+
+function clearAllOrders() {
+  if(!isAdmin) return;
+  if(!confirm(t('confirm_clear_orders'))) return;
+  const typed = prompt(t('prompt_clear_orders'));
+  if(typed !== 'BORRAR' && typed !== 'DELETE' && typed !== 'SUPPRIMER') { showToast(t('toast_delete_cancelled')); return; }
+
+  db.collection('orders').get().then(snap => {
+    if(snap.empty) { showToast(t('toast_no_orders_to_delete')); return; }
+    const batch = db.batch();
+    snap.forEach(doc => batch.delete(doc.ref));
+    return batch.commit();
+  }).then(() => showToast(t('toast_orders_deleted')))
+    .catch(err => alert(t('alert_clear_orders_error') + err.message));
 }
 
 function sendWhatsAppMessage() {
   const name = document.getElementById('chatName').value.trim();
   const message = document.getElementById('chatMessage').value.trim();
 
-  if(!message) return alert('Escribe tu mensaje antes de enviarlo.');
+  if(!message) return alert(t('alert_chat_message_required'));
 
-  const text = `Hola, soy ${name || 'un cliente de la tienda'}.\n\n${message}`;
+  const text = `${t('wa_chat_hello')} ${name || t('wa_chat_default_name')}.\n\n${message}`;
   openWhatsApp(text);
 
   document.getElementById('chatMessage').value = '';
@@ -988,6 +1277,7 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2500);
 }
 
+applyStaticTranslations();
 renderCart();
 updateCartBadge();
 </script>
