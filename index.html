@@ -160,38 +160,23 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
 .toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:var(--text-primary); color:var(--surface); padding:10px 20px; border-radius:var(--radius-md); font-size:13px; opacity:0; pointer-events:none; transition:opacity 0.3s; z-index:200; }
 .toast.show { opacity:1; }
 
-/* ===== FOOTER CORPORATIVO ===== */
+/* ===== FOOTER COMPACTO ===== */
 .app-footer {
   margin-top: auto;
-  padding: 14px 12px;
+  padding: 6px 8px;
   background: var(--surface);
   border-top: 1px solid var(--border);
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-secondary);
   text-align: center;
-  line-height: 1.5;
+  line-height: 1.3;
   flex-shrink: 0;
 }
-.footer-company {
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 4px;
-}
-.footer-links {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 4px;
-  flex-wrap: wrap;
-}
-.footer-links span {
-  color: var(--text-tertiary);
-}
-.footer-contact a {
+.app-footer a {
   color: var(--accent);
   text-decoration: none;
 }
-.footer-contact a:hover {
+.app-footer a:hover {
   text-decoration: underline;
 }
 
@@ -330,19 +315,10 @@ body { font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--
     </div>
   </div>
 
-  <!-- FOOTER CORPORATIVO -->
+  <!-- FOOTER COMPACTO -->
   <footer class="app-footer">
-    <div class="footer-company">KREADU S.A.S. </div>
-    <div class="footer-links">
-      <span>Empresa</span> • 
-      <span>AI Business Systems Lab</span> • 
-      <span>Academy</span> • 
-      <span>KREADU School</span>
-    </div>
-    <div class="footer-contact">
-      <strong>Contacto:</strong> <a href="mailto:is@kreadu.com">is@kreadu.com</a><br>
-      <a href="tel:+573235297951">(+57) 3235297951</a> | <a href="tel:+573225832662">(+57) 3225832662</a>
-    </div>
+    KREADU S.A.S. - Empresa AI Business Systems Lab - Academy - KREADU School<br>
+    Contacto: <a href="mailto:is@kreadu.com">is@kreadu.com</a>; <a href="tel:+573235297951">(+57) 3235297951</a>; <a href="tel:+573225832662">(+57) 3225832662</a>
   </footer>
 
   <!-- MODALS -->
