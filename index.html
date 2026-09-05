@@ -9,7 +9,6 @@
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <style>
 :root{
@@ -439,8 +438,21 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-const storage = firebase.storage();
 const auth = firebase.auth();
+
+// Subida de fotos a Cloudflare R2 a través del Worker
+const UPLOAD_WORKER_URL = "https://adrivargas-upload.raipimo37.workers.dev/";
+
+function uploadToR2(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+  return fetch(UPLOAD_WORKER_URL, { method: 'POST', body: formData })
+    .then(res => {
+      if (!res.ok) throw new Error('Error al subir la imagen (' + res.status + ')');
+      return res.json();
+    })
+    .then(data => data.url);
+}
 
 const whatsappNumber = "573138127403"; 
 
@@ -812,8 +824,7 @@ function saveLogo() {
   closeModals();
   showToast(t('toast_uploading_logo'));
 
-  const ref = storage.ref(`logo/store_logo_${Date.now()}`);
-  ref.put(file).then(snap => snap.ref.getDownloadURL()).then(url => {
+  uploadToR2(file).then(url => {
     return db.collection('config').doc('store').set({ logoUrl: url }, { merge: true });
   }).then(() => {
     document.getElementById('newLogoImg').value = '';
@@ -1066,8 +1077,7 @@ function saveProduct() {
   };
 
   if(file) {
-    storage.ref(`products/${Date.now()}_${file.name}`).put(file)
-      .then(snap => snap.ref.getDownloadURL())
+    uploadToR2(file)
       .then(url => saveData(url))
       .catch(err => alert(t('alert_image_upload_error') + err.message));
   } else {
@@ -1257,7 +1267,7 @@ function sendWhatsAppMessage() {
   const text = `${t('wa_chat_hello')} ${name || t('wa_chat_default_name')}.\n\n${message}`;
   openWhatsApp(text);
 
-  document.getElementById('chatMessage').value =سين   document.getElementById('chatMessage').value = '';
+  document.getElementById('chatMessage').value = '';
 }
 
 function escapeHtml(str) {
